@@ -1,0 +1,25 @@
+name: Release HortWiz QoL V2
+
+on:
+  push:
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Zip Mod Folder
+        run: |
+          mkdir release_build
+          zip -r release_build/HortWiz_QoL_V2.zip Contents/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release_build/HortWiz_QoL_V2.zip
+          generate_release_notes: true
