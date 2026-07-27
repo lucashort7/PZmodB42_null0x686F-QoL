@@ -1,4 +1,4 @@
-name: Release HortWiz QoL V2
+name: Release null0x686F QoL
 
 on:
   push:
@@ -16,10 +16,10 @@ jobs:
       - name: Zip Mod Folder
         run: |
           mkdir release_build
-          zip -r release_build/HortWiz_QoL_V2.zip Contents/
+          zip -r release_build/null0x686F_QoL.zip Contents/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: release_build/HortWiz_QoL_V2.zip
+          files: release_build/null0x686F_QoL.zip
           generate_release_notes: true

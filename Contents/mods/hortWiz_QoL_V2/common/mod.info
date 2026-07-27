@@ -1,5 +1,0 @@
-name=hortWiz_QoL
-poster=poster.png
-id=hortWiz_QoL_V2
-description=No shortcuts. No bad code. Just raw memory allocation.
-require=hortWiz_Core

@@ -1,34 +1,31 @@
-# HortWiz QoL V2
+# null0x686F QoL
 
 ![Project Zomboid](https://img.shields.io/badge/Project%20Zomboid-B42-blue)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Performance](https://img.shields.io/badge/Performance-O(1)-brightgreen)
 
-Suite de **Quality of Life (QoL)** para o Project Zomboid Build 42, desenhada a partir do zero com **performance extrema** em mente. Nada de loops em `OnTick`, nada de quedas de FPS.
+Quality of Life suite for Project Zomboid Build 42, built from scratch with performance in mind. No `OnTick` loops, no FPS drops.
 
-## Requer
-- **HortWiz Core** (dependência obrigatória — logger, debug panel e utilitários compartilhados).
+## Requires
+- **null0x686F CoreLib** (hard dependency).
 
 ## Features
-- **Rip All Clothing:** Rasgue toda a roupa elegível do inventário de uma vez, com gating de ferramenta (Scissors/Sharp Knife) por tipo de tecido.
-- **Dismantle All Electronics:** Desmonte todos os eletrônicos elegíveis de uma vez, dirigido pelas receitas de craft nativas do jogo (herda animação/XP/itens bônus automaticamente).
-- **Zombie Outline:** Contorno de cor customizável para zumbis alvo.
-- **Inventory Title:** Cabeçalho do inventário mostra `[Nome do Jogador]'s Inventory`.
-- **Gas Siphon Walk:** Abasteça/sifone gasolina enquanto anda/mira, sem cancelar a ação.
-- **Fence Interaction Priority:** Prioriza pular cercas sobre interações com itens no chão.
-- **Worn Items Toggle:** Oculta roupas equipadas preservando slots de mochila/chaveiro.
-- **Auto Equip Broken Weapon:** Reequipa automaticamente uma arma do mesmo tipo quando a atual quebra.
-- **Walk & Equip:** Permite equipar/ajustar roupas enquanto anda ou mira.
-- **Auto Unset Alarms:** Desativa alarmes de relógios/despertadores automaticamente ao looter.
+- **Rip All Clothing** — batch-rip eligible clothing, tool-gated by fabric type.
+- **Dismantle All Electronics** — batch-dismantle eligible electronics, driven by the game's own craft recipes (inherits correct animation/XP/bonus items automatically).
+- **Zombie Outline** — customizable outline color for targeted zombies.
+- **Inventory Title** — inventory header shows `[Player Name]'s Inventory`.
+- **Gas Siphon Walk** — refuel/siphon while walking/aiming without cancelling.
+- **Fence Interaction Priority** — prioritizes vaulting fences over ground item interactions.
+- **Worn Items Toggle** — hides equipped clothes, keeps backpack/keyring visible.
+- **Auto Equip Broken Weapon** — re-equips a same-type replacement when your weapon breaks.
+- **Walk & Equip** — equip/adjust clothing while walking or aiming.
+- **Auto Unset Alarms** — turns off looted alarm clocks/watches automatically.
 
-## Instalação (Manual)
-1. Baixe o último `.zip` da aba [Releases](../../releases).
-2. Extraia a pasta `hortWiz_QoL_V2` dentro de `C:\Users\SEU_USUARIO\Zomboid\mods\`.
-3. Instale também o **HortWiz Core** (dependência).
-4. Ative os dois mods no menu principal do jogo.
+## Installation (Manual)
+1. Download the latest `.zip` from [Releases](../../releases).
+2. Extract the `null0x686F_QoL` folder into `C:\Users\YOUR_USER\Zomboid\mods\`.
+3. Install **null0x686F CoreLib** too.
+4. Enable both mods in the main menu.
 
-## Configuração
-O mod suporta **ModOptions** (opcional, soft-dependency). Se o ModOptions estiver instalado, você ganhará uma aba dedicada nas configurações do jogo para ligar/desligar cada recurso.
-
-## Contribuição
-Leia o [CONTRIBUTING.md](CONTRIBUTING.md) antes de enviar Pull Requests. Nós levamos a performance MUITO a sério. Qualquer código com *Vibe Coding* (loops desnecessários no render) será rejeitado.
+## Configuration
+Supports **ModOptions** (optional, soft-dependency) for a dedicated in-game settings tab.
