@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Create Release
@@ -23,3 +26,17 @@ jobs:
         with:
           files: release_build/null0x686F_QoL.zip
           generate_release_notes: true
+
+      - name: Move floating 'latest' tag to this release
+        run: |
+          git tag -f latest
+          git push origin latest --force
+
+      - name: Update 'latest' release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Latest Release
+          files: release_build/null0x686F_QoL.zip
+          generate_release_notes: false
+          prerelease: false

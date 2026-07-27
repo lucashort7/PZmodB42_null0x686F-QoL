@@ -1,0 +1,36 @@
+name: Dev Build (null0x686F QoL)
+
+on:
+  push:
+    branches:
+      - dev
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build dev-latest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Zip Mod Folder
+        run: |
+          mkdir release_build
+          zip -r release_build/null0x686F_QoL.zip Contents/
+
+      - name: Move floating 'dev-latest' tag to this build
+        run: |
+          git tag -f dev-latest
+          git push origin dev-latest --force
+
+      - name: Update 'dev-latest' release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: dev-latest
+          name: Dev Latest Build
+          files: release_build/null0x686F_QoL.zip
+          generate_release_notes: false
+          prerelease: true
