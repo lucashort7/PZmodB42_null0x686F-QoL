@@ -1,6 +1,7 @@
-name=null0x686F_QoL
+name=[null0x686F] QoL
 poster=poster.png
 id=null0x686F_QoL
 description=No shortcuts. No bad code. Just raw memory allocation.
 require=null0x686F_CoreLib
+versionMin=42.0
 modversion=0.1.0

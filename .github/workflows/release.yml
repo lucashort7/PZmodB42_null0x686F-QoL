@@ -2,41 +2,34 @@ name: Release null0x686F QoL
 
 on:
   push:
-    tags:
-      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+    branches: [main]
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
-  build:
-    name: Create Release
+  release-please:
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.rp.outputs.release_created }}
+      tag_name: ${{ steps.rp.outputs.tag_name }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Zip Mod Folder
-        run: |
-          mkdir release_build
-          zip -r release_build/null0x686F_QoL.zip Contents/
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - id: rp
+        uses: googleapis/release-please-action@v4
         with:
-          files: release_build/null0x686F_QoL.zip
-          generate_release_notes: true
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
 
-      - name: Move floating 'latest' tag to this release
-        run: |
-          git tag -f latest
-          git push origin latest --force
-
-      - name: Update 'latest' release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: latest
-          name: Latest Release
-          files: release_build/null0x686F_QoL.zip
-          generate_release_notes: false
-          prerelease: false
+  publish:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    permissions:
+      contents: write
+    uses: lucashort7/PZmodB42_null0x686F-Suite/.github/workflows/mod-release.yml@main
+    with:
+      mod_id: null0x686F_QoL
+      tag_name: ${{ needs.release-please.outputs.tag_name }}
+      publish_steam: false
+      prerelease: false
+    secrets: inherit

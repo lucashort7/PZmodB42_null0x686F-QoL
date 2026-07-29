@@ -1,0 +1,16 @@
+.DS_Store 
+.classpath
+.claude
+.cursor
+.git*
+.gradle
+.idea
+.project
+.settings
+.vscode
+*.log
+*.tmp
+*.swp
+Thumbs.db
+tmp
+*.ps1

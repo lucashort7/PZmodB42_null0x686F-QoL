@@ -9,28 +9,23 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    name: Build dev-latest
+  move-tag:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Zip Mod Folder
-        run: |
-          mkdir release_build
-          zip -r release_build/null0x686F_QoL.zip Contents/
-
+      - uses: actions/checkout@v4
       - name: Move floating 'dev-latest' tag to this build
         run: |
           git tag -f dev-latest
           git push origin dev-latest --force
 
-      - name: Update 'dev-latest' release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: dev-latest
-          name: Dev Latest Build
-          files: release_build/null0x686F_QoL.zip
-          generate_release_notes: false
-          prerelease: true
+  publish:
+    needs: move-tag
+    permissions:
+      contents: write
+    uses: lucashort7/PZmodB42_null0x686F-Suite/.github/workflows/mod-release.yml@main
+    with:
+      mod_id: null0x686F_QoL
+      tag_name: dev-latest
+      publish_steam: false
+      prerelease: true
+    secrets: inherit
