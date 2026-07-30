@@ -1,4 +1,4 @@
-local hort_wiz_qol = require("null0x686F_QoL/setup")
+local qol_setup = require("null0x686F_QoL/setup")
 local log = require("null0x686F_QoL/log")
 
 local _is_patched = false
@@ -41,7 +41,7 @@ end
 
 ---@param player IsoPlayer
 local function _apply_vanilla_zombie_outline_custom_color(player)
-  if not hort_wiz_qol.is_zombie_outline_enabled() then return end
+  if not qol_setup.is_zombie_outline_enabled() then return end
 
   if not player then return end
   local is_local_player = player.isLocalPlayer and player:isLocalPlayer() or false
@@ -51,8 +51,8 @@ local function _apply_vanilla_zombie_outline_custom_color(player)
   local is_aiming = player:isAiming() and player:isWeaponReady()
 
   if is_aiming and not _was_aiming then
-    if hort_wiz_qol.sync_mod_options then
-      hort_wiz_qol.sync_mod_options()
+    if qol_setup.sync_mod_options then
+      qol_setup.sync_mod_options()
     end
   end
   _was_aiming = is_aiming
@@ -66,7 +66,7 @@ local function _apply_vanilla_zombie_outline_custom_color(player)
   if not _is_melee_outline_enabled then return end
 
   local player_num = player:getPlayerNum()
-  local r, g, b, a = hort_wiz_qol.get_zombie_outline_custom_color()
+  local r, g, b, a = qol_setup.get_zombie_outline_custom_color()
 
   if _last_highlighted_zombie and not _last_highlighted_zombie:isDead() then
     if _last_highlighted_zombie:isOutlineHighlight(player_num) then
