@@ -62,7 +62,7 @@ local function _patch_main_options()
         zombie_outline.update_configs()
       end
       if qol_setup.sync_mod_options then
-        qol_setup.sync_mod_options()
+        qol_setup.sync_mod_options("MainOptions:apply patch")
       end
     end
 

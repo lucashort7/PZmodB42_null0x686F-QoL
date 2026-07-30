@@ -112,11 +112,12 @@ local function _init_mod_options()
     end
   end
 
-  options.OnApplyMainMenu = qol_setup.sync_mod_options
-  options.OnApplyInGame = qol_setup.sync_mod_options
+  options.OnApplyMainMenu = function() qol_setup.sync_mod_options("OnApplyMainMenu") end
+  options.OnApplyInGame = function() qol_setup.sync_mod_options("OnApplyInGame") end
 end
 
-qol_setup.sync_mod_options = function ()
+qol_setup.sync_mod_options = function (source)
+  log.debug("sync_mod_options() triggered by: " .. _tostring(source or "unknown"))
   if not (PZAPI and PZAPI.ModOptions and PZAPI.ModOptions.getOptions) then return end
 
   local opts = PZAPI.ModOptions:getOptions(_mod_id)
@@ -228,7 +229,7 @@ local function init()
   if _is_patched or state.__modoptions_hooks then return end
 
   Events.OnGameBoot.Add(_init_mod_options)
-  Events.OnGameStart.Add(qol_setup.sync_mod_options)
+  Events.OnGameStart.Add(function() qol_setup.sync_mod_options("OnGameStart") end)
   Events.OnGameStart.Add(_register_qol_tab)
 
   _is_patched = true
