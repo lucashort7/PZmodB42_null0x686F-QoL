@@ -11,6 +11,10 @@ local _was_aiming = false
 ---@type IsoZombie|nil
 local _last_highlighted_zombie = nil
 
+-- Vanilla-option capture: reads PZ's own Core "melee outline" setting, not a
+-- mod setting of ours. Only feature in the mod that touches a vanilla option
+-- directly, so this stays local instead of a shared helper (revisit if a
+-- second feature ever needs one).
 local function _update_core_configs()
   local core = _get_core and _get_core() or nil
   if core and core.getOptionMeleeOutline then
@@ -41,7 +45,7 @@ end
 
 ---@param player IsoPlayer
 local function _apply_vanilla_zombie_outline_custom_color(player)
-  if not qol_setup.is_zombie_outline_enabled() then return end
+  if not qol_setup.is_feature_enabled("zombie_outline") then return end
 
   if not player then return end
   local is_local_player = player.isLocalPlayer and player:isLocalPlayer() or false

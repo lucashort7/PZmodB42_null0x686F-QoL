@@ -5,7 +5,6 @@ local log = require("null0x686F_QoL/log")
 local _string_format = string.format
 
 local r, g, b, a = 0.0, 1.0, 0.8, 1.0
-local _is_zombie_outline_enabled = true
 
 local _feature_toggles = {
   rack_dry = false,
@@ -17,12 +16,13 @@ local _feature_toggles = {
   quick_context = true,
   walk_and_equip = true,
   auto_equip_broken_weapon = true,
+  zombie_outline = true,
 }
 
 local _broken_weapon_behavior = "drop" -- "drop" | "destroy" | "nothing"
 
 if cfg.ZOMBIE_OUTLINE then
-  _is_zombie_outline_enabled = cfg.ZOMBIE_OUTLINE.enabled ~= false
+  _feature_toggles.zombie_outline = cfg.ZOMBIE_OUTLINE.enabled ~= false
   if type(cfg.ZOMBIE_OUTLINE.colorRGBA) == "table" then
     local color = cfg.ZOMBIE_OUTLINE.colorRGBA
     r = color[1] or r
@@ -30,15 +30,6 @@ if cfg.ZOMBIE_OUTLINE then
     b = color[3] or b
     a = color[4] or a
   end
-end
-
-function null0x686F_QoL.is_zombie_outline_enabled()
-  return _is_zombie_outline_enabled
-end
-
-function null0x686F_QoL.set_zombie_outline_enabled(enabled)
-  _is_zombie_outline_enabled = enabled and true or false
-  log.debug(_string_format("setup.lua CACHE UPDATED -> ZombieOutline=%s", tostring(_is_zombie_outline_enabled)))
 end
 
 local _is_hiding_worn_items = true

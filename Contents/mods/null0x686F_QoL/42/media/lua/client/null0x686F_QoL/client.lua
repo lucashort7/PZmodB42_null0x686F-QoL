@@ -1,6 +1,7 @@
 local qol_setup = require("null0x686F_QoL/setup")
 local log = require("null0x686F_QoL/log")
 local zombie_outline = require("null0x686F_QoL/features/zombie_outline")
+local mod_options = require("null0x686F_QoL/modoptions")
 
 -- ==============================================================================
 -- QoL Features Loader (1 file per feature)
@@ -71,5 +72,12 @@ end
 Events.OnGameStart.Add(_patch_main_options)
 _patch_main_options()
 _init_feature_hooks()
+
+-- mod_options.init() registers on OnGameBoot/OnGameStart internally -- must be
+-- called directly here (file scope), NOT through the OnCreatePlayer-gated
+-- features_map loop above. The ModOptions UI needs to exist from the main
+-- menu, before any save/player is loaded; gating it on OnCreatePlayer would
+-- hide it until a save is already in progress.
+mod_options.init()
 
 log.info("null0x686F_QoL_V2 :: All 11 features loaded successfully!")
