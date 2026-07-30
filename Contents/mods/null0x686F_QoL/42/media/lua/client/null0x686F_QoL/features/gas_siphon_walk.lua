@@ -165,9 +165,6 @@ local function _patch_gasoline()
   log.debug("gas_siphon_walk.lua initialized with " .. _tostring(patched_count) .. " patches")
 end
 
-Events.OnGameStart.Add(_patch_gasoline)
-if _get_core() then _patch_gasoline() end
-
 return {
   init = _patch_gasoline
 }

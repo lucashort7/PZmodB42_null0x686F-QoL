@@ -100,9 +100,6 @@ local function _init_zombie_outline()
   log.debug("zombie_outline.lua initialized")
 end
 
-Events.OnGameStart.Add(_init_zombie_outline)
-if _get_core() then _init_zombie_outline() end
-
 return {
   init = _init_zombie_outline,
   update_configs = _update_core_configs

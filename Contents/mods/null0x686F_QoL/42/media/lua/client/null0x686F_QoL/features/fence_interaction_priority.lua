@@ -28,9 +28,6 @@ local function _patch_fence_priority()
   log.debug("fence_interaction_priority.lua initialized")
 end
 
-Events.OnGameStart.Add(_patch_fence_priority)
-if _get_core() then _patch_fence_priority() end
-
 return {
   init = _patch_fence_priority
 }

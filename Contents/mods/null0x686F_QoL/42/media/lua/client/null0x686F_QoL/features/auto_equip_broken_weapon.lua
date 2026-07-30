@@ -167,9 +167,6 @@ local function _init_auto_equip_broken_weapon()
   log.debug("auto_equip_broken_weapon.lua initialized")
 end
 
-Events.OnGameStart.Add(_init_auto_equip_broken_weapon)
-if _get_core() then _init_auto_equip_broken_weapon() end
-
 return {
   init = _init_auto_equip_broken_weapon
 }

@@ -100,9 +100,6 @@ local function _init_dry_towel()
   log.debug("dry_towel_hotkey.lua initialized")
 end
 
-Events.OnGameStart.Add(_init_dry_towel)
-if _get_core() then _init_dry_towel() end
-
 return {
   init = _init_dry_towel
 }

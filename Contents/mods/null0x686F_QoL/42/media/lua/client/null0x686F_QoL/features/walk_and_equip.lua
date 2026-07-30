@@ -42,9 +42,6 @@ local function _init_walk_and_equip()
   log.debug("walk_and_equip.lua initialized")
 end
 
-Events.OnGameStart.Add(_init_walk_and_equip)
-if _get_core() then _init_walk_and_equip() end
-
 return {
   init = _init_walk_and_equip
 }

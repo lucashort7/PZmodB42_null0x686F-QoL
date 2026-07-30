@@ -1,34 +1,61 @@
 local qol_setup = require("null0x686F_QoL/setup")
 local log = require("null0x686F_QoL/log")
+local zombie_outline = require("null0x686F_QoL/features/zombie_outline")
+
+-- ==============================================================================
+-- QoL Features Loader (1 file per feature)
+-- ==============================================================================
+local features_map = {
+  dry_towel_hotkey = require("null0x686F_QoL/features/dry_towel_hotkey"),
+  inventory_title = require("null0x686F_QoL/features/inventory_title"),
+  worn_items_toggle = require("null0x686F_QoL/features/worn_items_toggle"),
+  gas_siphon_walk = require("null0x686F_QoL/features/gas_siphon_walk"),
+  auto_unset_alarms = require("null0x686F_QoL/features/auto_unset_alarms"),
+  fence_interaction_priority = require("null0x686F_QoL/features/fence_interaction_priority"),
+  rip_all_clothing = require("null0x686F_QoL/features/quick_context_actions/rip_all_clothing"),
+  dismantle_all_electronics = require("null0x686F_QoL/features/quick_context_actions/dismantle_all_electronics"),
+  walk_and_equip = require("null0x686F_QoL/features/walk_and_equip"),
+  auto_equip_broken_weapon = require("null0x686F_QoL/features/auto_equip_broken_weapon"),
+  zombie_outline = zombie_outline,
+}
+-- ==============================================================================
+
+_G.__Null0x686FQoL = _G.__Null0x686FQoL or {
+  __setup_hooks = false,
+  __feature_hooks = false
+}
 
 log.info("==================================================")
 log.info("null0x686F_QoL_V2 :: Single-Feature Architecture Boot")
 log.info("==================================================")
 
--- ==============================================================================
--- QoL Features Loader (1 file per feature)
--- ==============================================================================
-require("null0x686F_QoL/features/dry_towel_hotkey")
-require("null0x686F_QoL/features/inventory_title")
-local worn_items_toggle = require("null0x686F_QoL/features/worn_items_toggle")
-require("null0x686F_QoL/features/gas_siphon_walk")
-require("null0x686F_QoL/features/auto_unset_alarms")
-require("null0x686F_QoL/features/fence_interaction_priority")
--- Quick Context Actions theme: 1 file per action (Rip All Clothing, Dismantle, Wash Clothing, Grab Items, ...)
-require("null0x686F_QoL/features/quick_context_actions/rip_all_clothing")
-require("null0x686F_QoL/features/quick_context_actions/dismantle_all_electronics")
-require("null0x686F_QoL/features/walk_and_equip")
-require("null0x686F_QoL/features/auto_equip_broken_weapon")
-local zombie_outline = require("null0x686F_QoL/features/zombie_outline")
--- ==============================================================================
+local function _init_feature_hooks()
+  local state = _G.__Null0x686FQoL
+  if state.__feature_hooks then return true end
 
-local _is_main_options_patched = false
+  local status, _ = pcall(function ()
+    Events.OnCreatePlayer.Add(function ()
+      for k, v in pairs(features_map) do
+        v.init()
+        log.debug(k .. " hook loaded!")
+      end
+    end)
+  end)
+
+  state.__feature_hooks = status
+end
+
 local function _patch_main_options()
-  if MainOptions and MainOptions.apply and not _is_main_options_patched then
+  local state = _G.__Null0x686FQoL
+  if MainOptions and MainOptions.apply and not state.__setup_hooks then
     local original_apply = MainOptions.apply
     function MainOptions:apply(...)
       log.info("MainOptions:apply() intercepted by null0x686F_QoL!")
       original_apply(self, ...)
+      -- zombie_outline caches its RGBA locally (perf: avoids reading setup.lua
+      -- every render tick), so it's the only feature that needs an explicit
+      -- push here when Mod Options settings are saved. Every other feature reads
+      -- setup.lua live on each event firing, no refresh needed.
       if zombie_outline and zombie_outline.update_configs then
         zombie_outline.update_configs()
       end
@@ -37,17 +64,12 @@ local function _patch_main_options()
       end
     end
 
-    _is_main_options_patched = true
+    state.__setup_hooks = true
   end
 end
 
 Events.OnGameStart.Add(_patch_main_options)
 _patch_main_options()
-
--- worn_items_toggle owns its event hooks internally, this file only decides
--- whether/when init() runs, so commenting this call out actually disables it
--- (unlike a bare require, which the engine still auto-loads regardless)
-Events.OnGameStart.Add(worn_items_toggle.init)
-if getCore() then worn_items_toggle.init() end
+_init_feature_hooks()
 
 log.info("null0x686F_QoL_V2 :: All 11 features loaded successfully!")

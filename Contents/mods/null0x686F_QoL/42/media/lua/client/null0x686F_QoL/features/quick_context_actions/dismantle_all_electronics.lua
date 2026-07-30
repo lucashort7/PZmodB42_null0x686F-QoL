@@ -180,9 +180,6 @@ local function _init_dismantle_all_electronics()
   log.debug("dismantle_all_electronics.lua initialized")
 end
 
-Events.OnGameStart.Add(_init_dismantle_all_electronics)
-if _get_core() then _init_dismantle_all_electronics() end
-
 return {
   init = _init_dismantle_all_electronics
 }

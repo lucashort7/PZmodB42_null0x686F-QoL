@@ -33,9 +33,6 @@ local function _init_auto_unset_alarms()
   log.debug("auto_unset_alarms.lua initialized")
 end
 
-Events.OnGameStart.Add(_init_auto_unset_alarms)
-if _get_core() then _init_auto_unset_alarms() end
-
 return {
   init = _init_auto_unset_alarms
 }
