@@ -1,12 +1,6 @@
-require("ISUI/ISPanel")
-require("ISUI/ISLabel")
-require("ISUI/ISTickBox")
-require("ISUI/ISButton")
-
 local qol_setup = require("null0x686F_QoL/setup")
 local log = require("null0x686F_QoL/log")
 local cfg = require("null0x686F_QoL/cfg")
-local tab_registry = require("null0x686F_CoreLib/debug_panel/tab_registry")
 
 local _mod_id = "null0x686F_QoL"
 local _mod_name = "null0x686F QoL Options"
@@ -42,11 +36,6 @@ local FEATURE_DEFS = {
   { key = "vehicle_gas", pzapi_key = "QoL_Vehicles", label = "Vehicle Gas QoL", tooltip = "Allows aiming while pumping gas and restores original equipped items when done.", section = "survival" },
   { key = "auto_equip_broken_weapon", pzapi_key = "QoL_AutoEquipBroken", label = "Auto-Handle Broken Weapons", tooltip = "Automatically handles your weapon when it breaks, and lets you re-equip a fresh copy with a hotkey.", section = "weapons" },
 }
-
-local FEATURE_DEFS_BY_KEY = {}
-for _, def in _ipairs(FEATURE_DEFS) do
-  FEATURE_DEFS_BY_KEY[def.key] = def
-end
 
 local SECTION_ORDER = { "combat", "inventory", "survival", "weapons" }
 local SECTION_TITLES = {
@@ -145,84 +134,6 @@ qol_setup.sync_mod_options = function (source)
     qol_setup.set_broken_weapon_behavior(behavior_key)
   end
 end
-
--- ==============================================================================
--- Debug panel tab (CoreLib debug panel, Debug Mode only): live toggles for the
--- same FEATURE_DEFS, without going through the vanilla ModOptions Apply flow.
--- ==============================================================================
-
----@class QoLOptionsTabUI: ISPanel
-local QoLOptionsTabUI = ISPanel:derive("QoLOptionsTabUI")
-
-function QoLOptionsTabUI:initialise()
-  ISPanel.initialise(self)
-
-  local font = (UIFont and UIFont.Small) and UIFont.Small or 0
-
-  self.title_lbl = ISLabel:new(12, 10, 20, "null0x686F QoL V2 - Live Feature Control", 1, 1, 1, 1, font, true)
-  self:addChild(self.title_lbl)
-
-  self.tickbox = ISTickBox:new(12, 35, self.width - 24, #FEATURE_DEFS * 26, "", self, self.on_tick_toggled)
-  self.tickbox:initialise()
-  self:addChild(self.tickbox)
-
-  self:populate_toggles()
-end
-
-function QoLOptionsTabUI:populate_toggles()
-  self.tickbox.options = {}
-  self.tickbox.optionData = {}
-  self.tickbox.selected = {}
-  self.tickbox.disabledOptions = {}
-  self.tickbox.optionsIndex = {}
-  self.tickbox.textures = {}
-  self.tickbox.optionCount = 1
-
-  for i, def in _ipairs(FEATURE_DEFS) do
-    local is_enabled = qol_setup.is_feature_enabled(def.key)
-    local idx = self.tickbox:addOption(def.label, def.key)
-    self.tickbox:setSelected(idx, is_enabled)
-  end
-end
-
-function QoLOptionsTabUI:on_tick_toggled(index, selected)
-  local feat_key = self.tickbox:getOptionData(index)
-  if not feat_key then return end
-
-  -- 1. Update setup.lua memory cache in O(1)
-  qol_setup.set_feature_enabled(feat_key, selected)
-
-  -- 2. Bidirectional Sync with PZAPI.ModOptions (.ini persistence). Must use
-  -- the real PZAPI option key (def.pzapi_key), not the internal feature key --
-  -- they differ (e.g. "inv_name" vs "QoL_InvName").
-  if PZAPI and PZAPI.ModOptions and PZAPI.ModOptions.getOptions then
-    local opts = PZAPI.ModOptions:getOptions(_mod_id)
-    if opts then
-      local def = FEATURE_DEFS_BY_KEY[feat_key]
-      local opt = def and opts:getOption(def.pzapi_key)
-      if opt and opt.setValue then
-        opt:setValue(selected)
-      end
-    end
-  end
-
-  log.debug(_string_format("QoL Tab Sync -> %s set to %s", feat_key, _tostring(selected)))
-end
-
-function QoLOptionsTabUI:new(x, y, width, height)
-  local o = ISPanel:new(x, y, width, height)
-  setmetatable(o, self)
-  self.__index = self
-  o.backgroundColor = { r = 0.05, g = 0.05, b = 0.05, a = 0.85 }
-  o.borderColor = { r = 0.2, g = 0.2, b = 0.2, a = 0.8 }
-  return o
-end
-
-local function _register_qol_tab()
-  tab_registry.registerTab("QoL Options", QoLOptionsTabUI, "NULL0X686F")
-end
-
--- ==============================================================================
 
 local _is_patched = false
 local function init()
