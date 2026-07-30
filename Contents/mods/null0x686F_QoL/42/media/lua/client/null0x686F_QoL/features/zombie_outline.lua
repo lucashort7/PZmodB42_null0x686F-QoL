@@ -6,11 +6,14 @@ local _get_core = getCore
 local _instanceof = instanceof
 
 local _is_melee_outline_enabled = true
-local _was_aiming = false
 
 ---@type IsoZombie|nil
 local _last_highlighted_zombie = nil
 
+-- Vanilla-option capture: reads PZ's own Core "melee outline" setting, not a
+-- mod setting of ours. Only feature in the mod that touches a vanilla option
+-- directly, so this stays local instead of a shared helper (revisit if a
+-- second feature ever needs one).
 local function _update_core_configs()
   local core = _get_core and _get_core() or nil
   if core and core.getOptionMeleeOutline then
@@ -41,7 +44,7 @@ end
 
 ---@param player IsoPlayer
 local function _apply_vanilla_zombie_outline_custom_color(player)
-  if not qol_setup.is_zombie_outline_enabled() then return end
+  if not qol_setup.is_feature_enabled("zombie_outline") then return end
 
   if not player then return end
   local is_local_player = player.isLocalPlayer and player:isLocalPlayer() or false
@@ -49,13 +52,6 @@ local function _apply_vanilla_zombie_outline_custom_color(player)
   if not is_local_player or is_npc then return end
 
   local is_aiming = player:isAiming() and player:isWeaponReady()
-
-  if is_aiming and not _was_aiming then
-    if qol_setup.sync_mod_options then
-      qol_setup.sync_mod_options()
-    end
-  end
-  _was_aiming = is_aiming
 
   if not is_aiming then
     _last_highlighted_zombie = nil
@@ -99,9 +95,6 @@ local function _init_zombie_outline()
   _is_patched = true
   log.debug("zombie_outline.lua initialized")
 end
-
-Events.OnGameStart.Add(_init_zombie_outline)
-if _get_core() then _init_zombie_outline() end
 
 return {
   init = _init_zombie_outline,

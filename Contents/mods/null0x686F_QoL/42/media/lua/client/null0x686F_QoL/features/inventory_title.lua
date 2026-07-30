@@ -32,9 +32,6 @@ local function _patch_inventory_title()
   log.debug("inventory_title.lua initialized")
 end
 
-Events.OnGameStart.Add(_patch_inventory_title)
-if _get_core() then _patch_inventory_title() end
-
 return {
   init = _patch_inventory_title
 }

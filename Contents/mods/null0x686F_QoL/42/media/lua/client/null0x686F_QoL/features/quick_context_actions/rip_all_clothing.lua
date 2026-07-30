@@ -220,9 +220,6 @@ local function _init_quick_context_actions()
   log.debug("rip_all_clothing.lua initialized")
 end
 
-Events.OnGameStart.Add(_init_quick_context_actions)
-if _get_core() then _init_quick_context_actions() end
-
 return {
   init = _init_quick_context_actions
 }
