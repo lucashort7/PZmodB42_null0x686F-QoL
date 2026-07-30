@@ -3,7 +3,7 @@ require "Entity/ISEntityUI"
 
 local log = require("null0x686F_QoL/log")
 local setup = require("null0x686F_QoL/setup")
-local core_tools = require("null0x686F_CoreLib/tools")
+local core_tools = require("null0x686F_CoreLib/utils/item_finder")
 
 local _is_patched = false
 local _get_core = getCore
