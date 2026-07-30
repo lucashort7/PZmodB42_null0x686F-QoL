@@ -1,4 +1,4 @@
-local hort_wiz_qol = require("null0x686F_QoL/setup")
+local qol_setup = require("null0x686F_QoL/setup")
 local log = require("null0x686F_QoL/log")
 
 log.info("==================================================")
@@ -32,8 +32,8 @@ local function _patch_main_options()
       if zombie_outline and zombie_outline.update_configs then
         zombie_outline.update_configs()
       end
-      if hort_wiz_qol.sync_mod_options then
-        hort_wiz_qol.sync_mod_options()
+      if qol_setup.sync_mod_options then
+        qol_setup.sync_mod_options()
       end
     end
 
