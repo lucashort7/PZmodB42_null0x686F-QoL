@@ -10,7 +10,7 @@ log.info("==================================================")
 -- ==============================================================================
 require("null0x686F_QoL/features/dry_towel_hotkey")
 require("null0x686F_QoL/features/inventory_title")
-require("null0x686F_QoL/features/worn_items_toggle")
+local worn_items_toggle = require("null0x686F_QoL/features/worn_items_toggle")
 require("null0x686F_QoL/features/gas_siphon_walk")
 require("null0x686F_QoL/features/auto_unset_alarms")
 require("null0x686F_QoL/features/fence_interaction_priority")
@@ -43,5 +43,11 @@ end
 
 Events.OnGameStart.Add(_patch_main_options)
 _patch_main_options()
+
+-- worn_items_toggle owns its event hooks internally, this file only decides
+-- whether/when init() runs, so commenting this call out actually disables it
+-- (unlike a bare require, which the engine still auto-loads regardless)
+Events.OnGameStart.Add(worn_items_toggle.init)
+if getCore() then worn_items_toggle.init() end
 
 log.info("null0x686F_QoL_V2 :: All 11 features loaded successfully!")

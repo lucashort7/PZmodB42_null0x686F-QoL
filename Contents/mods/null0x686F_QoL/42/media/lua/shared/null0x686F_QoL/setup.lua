@@ -41,6 +41,17 @@ function null0x686F_QoL.set_zombie_outline_enabled(enabled)
   log.debug(_string_format("setup.lua CACHE UPDATED -> ZombieOutline=%s", tostring(_is_zombie_outline_enabled)))
 end
 
+local _is_hiding_worn_items = true
+
+function null0x686F_QoL.is_hiding_worn_items()
+  return _is_hiding_worn_items
+end
+
+function null0x686F_QoL.set_hiding_worn_items(enabled)
+  _is_hiding_worn_items = enabled and true or false
+  log.debug(_string_format("setup.lua CACHE UPDATED -> HidingWornItems=%s", tostring(_is_hiding_worn_items)))
+end
+
 function null0x686F_QoL.get_zombie_outline_custom_color()
   return r, g, b, a
 end
