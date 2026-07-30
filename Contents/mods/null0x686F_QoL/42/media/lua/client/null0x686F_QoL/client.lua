@@ -70,7 +70,14 @@ local function _patch_main_options()
   end
 end
 
+local function _on_game_state_enter(state)
+  if qol_setup.sync_mod_options then
+    qol_setup.sync_mod_options("OnGameStateEnter")
+  end
+end
+
 Events.OnGameStart.Add(_patch_main_options)
+Events.OnGameStateEnter.Add(_on_game_state_enter)
 _patch_main_options()
 _init_feature_hooks()
 
