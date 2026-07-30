@@ -232,7 +232,16 @@ local function init()
 
   Events.OnGameBoot.Add(_init_mod_options)
   Events.OnGameStart.Add(function() qol_setup.sync_mod_options("OnGameStart") end)
-  Events.OnGameStart.Add(_register_qol_tab)
+  if PZAPI and PZAPI.ModOptions and PZAPI.ModOptions.save and not state.__pzapi_save_patched then
+    local original_pzapi_save = PZAPI.ModOptions.save
+    function PZAPI.ModOptions:save(...)
+      log.info("PZAPI.ModOptions:save() intercepted by null0x686F_QoL!")
+      local res = original_pzapi_save(self, ...)
+      qol_setup.sync_mod_options("PZAPI.ModOptions:save patch")
+      return res
+    end
+    state.__pzapi_save_patched = true
+  end
 
   _is_patched = true
   state.__modoptions_hooks = true
