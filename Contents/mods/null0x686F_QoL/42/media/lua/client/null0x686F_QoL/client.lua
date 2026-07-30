@@ -40,6 +40,7 @@ local function _init_feature_hooks()
         v.init()
         log.debug(k .. " hook loaded!")
       end
+      log.info("null0x686F_QoL_V2 :: All 11 features loaded successfully!")
     end)
   end)
 
@@ -79,5 +80,3 @@ _init_feature_hooks()
 -- menu, before any save/player is loaded; gating it on OnCreatePlayer would
 -- hide it until a save is already in progress.
 mod_options.init()
-
-log.info("null0x686F_QoL_V2 :: All 11 features loaded successfully!")
