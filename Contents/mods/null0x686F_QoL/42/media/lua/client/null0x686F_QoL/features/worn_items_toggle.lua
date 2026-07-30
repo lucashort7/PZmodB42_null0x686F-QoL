@@ -8,9 +8,48 @@ local _ipairs = ipairs
 local _table_insert = table.insert
 local _table_wipe = table.wipe
 local _get_specific_player = getSpecificPlayer
-local _get_core = getCore
 
 local _hide_cache = {}
+
+local _TEXTURE_SHOWN = "media/ui/null0x686F_qol_eye.png"
+local _TEXTURE_HIDDEN = "media/ui/null0x686F_qol_eye_crossed.png"
+local _texture_shown_cache
+local _texture_hidden_cache
+
+local function _get_shown_texture()
+  if not _texture_shown_cache then
+    _texture_shown_cache = getTexture(_TEXTURE_SHOWN)
+  end
+  return _texture_shown_cache
+end
+
+local function _get_hidden_texture()
+  if not _texture_hidden_cache then
+    _texture_hidden_cache = getTexture(_TEXTURE_HIDDEN)
+  end
+  return _texture_hidden_cache
+end
+
+local function _on_fill_inventory_menu(player_num, context)
+  if not setup.is_feature_enabled("hide_worn") then return end
+
+  local player = _get_specific_player(player_num)
+  if not player then return end
+
+  local is_hiding = setup.is_hiding_worn_items()
+  local label = is_hiding and "Show Worn Items" or "Hide Worn Items"
+
+  local option = context:addOption(label, player, function()
+    setup.set_hiding_worn_items(not is_hiding)
+
+    local container = player:getInventory()
+    if container and container.setDrawDirty then
+      container:setDrawDirty(true)
+    end
+  end)
+
+  option.iconTexture = is_hiding and _get_hidden_texture() or _get_shown_texture()
+end
 
 local function _patch_worn_items()
   if _is_patched then return end
@@ -22,6 +61,7 @@ local function _patch_worn_items()
     original_refresh(self)
 
     if not setup.is_feature_enabled("hide_worn") then return end
+    if not setup.is_hiding_worn_items() then return end
 
     local page = self.inventoryPage or self.parent
     if not page then return end
@@ -75,12 +115,11 @@ local function _patch_worn_items()
     if self.updateScrollbars then self:updateScrollbars() end
   end
 
+  Events.OnFillInventoryObjectContextMenu.Add(_on_fill_inventory_menu)
+
   _is_patched = true
   log.debug("worn_items_toggle.lua initialized")
 end
-
-Events.OnGameStart.Add(_patch_worn_items)
-if _get_core() then _patch_worn_items() end
 
 return {
   init = _patch_worn_items

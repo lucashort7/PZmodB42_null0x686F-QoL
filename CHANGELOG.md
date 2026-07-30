@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0](https://github.com/lucashort7/PZmodB42_null0x686F-QoL/compare/v0.2.0...v0.3.0) (2026-07-30)
+
+
+### Features
+
+* **qol:** [AGGY-0007] add worn items hide/show context menu toggle ([3aae2eb](https://github.com/lucashort7/PZmodB42_null0x686F-QoL/commit/3aae2ebb0ab085f39661cf3215e31f5dd8fd234f))
+
 ## [0.2.0](https://github.com/lucashort7/PZmodB42_null0x686F-QoL/compare/v0.1.0...v0.2.0) (2026-07-29)
 
 
