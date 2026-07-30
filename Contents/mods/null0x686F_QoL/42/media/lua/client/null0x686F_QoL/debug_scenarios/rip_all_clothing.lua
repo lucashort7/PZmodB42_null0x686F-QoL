@@ -3,8 +3,9 @@ if debugScenarios == nil then
 end
 
 -- Test rig for null0x686F QoL "Rip All Clothing" (AGGY-0008).
--- Item IDs confirmed against media/scripts/generated/items/clothing.txt and weapon.txt (build 42.15),
+-- Item IDs confirmed against media/scripts/generated/items/clothing.txt and weapon.txt,
 -- not just the PZ Wiki item list, since the wiki can drift from the installed build.
+-- Originally confirmed on build 42.15, re-confirmed unchanged on 42.20 (2026-07-30).
 --
 -- Fabric  | Item                        | FabricType | Rip tag confirmed
 -- --------|-----------------------------|------------|---------------------------
