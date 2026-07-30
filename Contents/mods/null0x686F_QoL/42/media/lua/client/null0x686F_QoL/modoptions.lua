@@ -112,8 +112,10 @@ local function _init_mod_options()
     end
   end
 
-  options.OnApplyMainMenu = function() qol_setup.sync_mod_options("OnApplyMainMenu") end
-  options.OnApplyInGame = function() qol_setup.sync_mod_options("OnApplyInGame") end
+  -- OnApplyMainMenu/OnApplyInGame (PZAPI's own ModOptions apply callbacks)
+  -- confirmed via in-game log to never fire on this build -- client.lua's
+  -- own monkeypatch on vanilla MainOptions:apply is the only Apply path that
+  -- actually works, don't re-add these without re-confirming first.
 end
 
 qol_setup.sync_mod_options = function (source)
