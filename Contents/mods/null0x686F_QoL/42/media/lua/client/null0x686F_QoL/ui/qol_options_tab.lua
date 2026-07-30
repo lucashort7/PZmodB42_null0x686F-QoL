@@ -1,3 +1,6 @@
+---@class QoLOptionsTabUI: ISPanel
+local QoLOptionsTabUI = ISPanel:derive("QoLOptionsTabUI")
+
 require("ISUI/ISPanel")
 require("ISUI/ISLabel")
 require("ISUI/ISTickBox")
@@ -6,12 +9,11 @@ require("ISUI/ISButton")
 local setup = require("null0x686F_QoL/setup")
 local log = require("null0x686F_QoL/log")
 
-local _pairs = pairs
 local _ipairs = ipairs
 local _tostring = tostring
 local _string_format = string.format
 
-QoLOptionsTabUI = ISPanel:derive("QoLOptionsTabUI")
+
 
 local _features_def = {
   { id = "inv_name", label = "Custom Player Name in Inventory Title", default = true },
