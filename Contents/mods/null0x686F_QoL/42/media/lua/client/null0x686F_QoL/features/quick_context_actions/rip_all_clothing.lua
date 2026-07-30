@@ -69,7 +69,7 @@ local function _get_rippable_fabric_type(item)
   return item.getFabricType and item:getFabricType()
 end
 
-local core_tools = require("null0x686F_CoreLib/tools")
+local core_tools = require("null0x686F_CoreLib/utils/item_finder")
 
 local function _find_rip_tool(player)
   return core_tools.find_tool_by_tag(player, { ItemTag.SCISSORS, ItemTag.SHARP_KNIFE })

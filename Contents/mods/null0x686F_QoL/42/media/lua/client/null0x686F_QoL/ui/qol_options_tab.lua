@@ -84,10 +84,10 @@ function QoLOptionsTabUI:new(x, y, width, height)
   return o
 end
 
+local tab_registry = require("null0x686F_CoreLib/debug_panel/tab_registry")
+
 local function _register_qol_tab()
-  if _G.Null0x686FCoreLib and _G.Null0x686FCoreLib.registerTab then
-    _G.Null0x686FCoreLib.registerTab("QoL Options", QoLOptionsTabUI, "NULL0X686F")
-  end
+  tab_registry.registerTab("QoL Options", QoLOptionsTabUI, "NULL0X686F")
 end
 
 Events.OnGameStart.Add(_register_qol_tab)
