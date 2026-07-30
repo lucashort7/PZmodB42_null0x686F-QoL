@@ -30,6 +30,7 @@ jobs:
     with:
       mod_id: null0x686F_QoL
       tag_name: ${{ needs.release-please.outputs.tag_name }}
-      publish_steam: false
+      published_file_id: '3774429809'
+      publish_steam: true
       prerelease: false
     secrets: inherit
