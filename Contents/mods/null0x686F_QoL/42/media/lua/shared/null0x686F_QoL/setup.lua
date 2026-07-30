@@ -52,7 +52,6 @@ function null0x686F_QoL.update_zombie_outline_custom_color(new_r, new_g, new_b, 
   g = new_g or g
   b = new_b or b
   a = new_a or a
-  log.debug(_string_format("setup.lua CACHE UPDATED -> R=%.2f, G=%.2f, B=%.2f, A=%.2f", r, g, b, a))
 end
 
 function null0x686F_QoL.is_feature_enabled(feature_key)
@@ -61,7 +60,6 @@ end
 
 function null0x686F_QoL.set_feature_enabled(feature_key, enabled)
   _feature_toggles[feature_key] = enabled and true or false
-  log.debug(_string_format("setup.lua CACHE UPDATED -> %s=%s", feature_key, tostring(_feature_toggles[feature_key])))
 end
 
 function null0x686F_QoL.get_broken_weapon_behavior()
@@ -71,7 +69,6 @@ end
 function null0x686F_QoL.set_broken_weapon_behavior(behavior)
   if behavior == "drop" or behavior == "destroy" or behavior == "nothing" then
     _broken_weapon_behavior = behavior
-    log.debug(_string_format("setup.lua CACHE UPDATED -> BrokenWeaponBehavior=%s", behavior))
   end
 end
 

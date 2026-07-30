@@ -11,6 +11,7 @@ local _tonumber = tonumber
 local _type = type
 local _pcall = pcall
 local _ipairs = ipairs
+local _table_concat = table.concat
 
 local _broken_weapon_behavior_order = { "drop", "destroy", "nothing" }
 local _broken_weapon_behavior_labels = {
@@ -108,16 +109,19 @@ local function _init_mod_options()
 end
 
 qol_setup.sync_mod_options = function (source)
-  log.debug("sync_mod_options() triggered by: " .. _tostring(source or "unknown"))
   if not (PZAPI and PZAPI.ModOptions and PZAPI.ModOptions.getOptions) then return end
 
   local opts = PZAPI.ModOptions:getOptions(_mod_id)
   if not opts then return end
 
+  local summary = {}
+
   for _, def in _ipairs(FEATURE_DEFS) do
     local opt = opts:getOption(def.pzapi_key)
     if opt then
-      qol_setup.set_feature_enabled(def.key, opt:getValue() and true or false)
+      local value = opt:getValue() and true or false
+      qol_setup.set_feature_enabled(def.key, value)
+      summary[#summary + 1] = _string_format("%s=%s", def.key, _tostring(value))
     end
   end
 
@@ -126,13 +130,17 @@ qol_setup.sync_mod_options = function (source)
     local def_r, def_g, def_b, def_a = qol_setup.get_zombie_outline_custom_color()
     local r, g, b, a = _extract_color(opt_color, def_r, def_g, def_b, def_a)
     qol_setup.update_zombie_outline_custom_color(r, g, b, a)
+    summary[#summary + 1] = _string_format("RGBA=%.2f,%.2f,%.2f,%.2f", r, g, b, a)
   end
 
   local opt_behavior = opts:getOption("QoL_BrokenWeaponBehavior")
   if opt_behavior then
     local behavior_key = _broken_weapon_behavior_order[opt_behavior:getValue()] or "drop"
     qol_setup.set_broken_weapon_behavior(behavior_key)
+    summary[#summary + 1] = _string_format("BrokenWeaponBehavior=%s", behavior_key)
   end
+
+  log.debug(_string_format("sync_mod_options(%s) -> {%s}", _tostring(source or "unknown"), _table_concat(summary, ", ")))
 end
 
 local _is_patched = false
