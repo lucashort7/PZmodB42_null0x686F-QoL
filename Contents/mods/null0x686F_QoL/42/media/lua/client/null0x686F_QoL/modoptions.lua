@@ -31,10 +31,7 @@ local FEATURE_DEFS = {
   { key = "hide_worn", pzapi_key = "QoL_HideWorn", label = "Hide Worn Items", tooltip = "Hides worn clothing from the main inventory list to declutter.", section = "inventory" },
   { key = "quick_context", pzapi_key = "QoL_QuickContext", label = "Quick Context Menu Actions", tooltip = "Adds 1-click context menu shortcuts for Rip All Clothing, Swap Gas Mask Filter, and Bandages.", section = "inventory" },
   { key = "walk_and_equip", pzapi_key = "QoL_WalkAndEquip", label = "Walk/Aim While Equipping Clothing", tooltip = "Allows walking or aiming while putting on/adjusting clothing without interrupting the action.", section = "inventory" },
-  { key = "rack_dry", pzapi_key = "QoL_RackDry", label = "Rack Firearm to Dry", tooltip = "Press Rack Firearm key to dry yourself when wet and empty-handed.", section = "survival" },
   { key = "auto_unset_alarms", pzapi_key = "QoL_AutoUnsetAlarms", label = "Auto-Unset Alarms", tooltip = "Automatically turns off alarms on looted digital watches and clocks.", section = "survival" },
-  { key = "fence_priority", pzapi_key = "QoL_FencePriority", label = "Fence Jump Priority", tooltip = "Prioritizes vaulting fences over ground item interactions when close to fences.", section = "survival" },
-  { key = "vehicle_gas", pzapi_key = "QoL_Vehicles", label = "Vehicle Gas QoL", tooltip = "Allows aiming while pumping gas and restores original equipped items when done.", section = "survival" },
   { key = "auto_equip_broken_weapon", pzapi_key = "QoL_AutoEquipBroken", label = "Auto-Handle Broken Weapons", tooltip = "Automatically handles your weapon when it breaks, and lets you re-equip a fresh copy with a hotkey.", section = "weapons" },
 }
 

@@ -7,12 +7,9 @@ local _string_format = string.format
 local r, g, b, a = 0.0, 1.0, 0.8, 1.0
 
 local _feature_toggles = {
-  rack_dry = false,
   inv_name = true,
   hide_worn = true,
-  vehicle_gas = true,
   auto_unset_alarms = true,
-  fence_priority = true,
   quick_context = true,
   walk_and_equip = true,
   auto_equip_broken_weapon = true,
