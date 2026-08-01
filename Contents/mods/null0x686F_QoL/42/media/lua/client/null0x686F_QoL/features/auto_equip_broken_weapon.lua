@@ -30,11 +30,13 @@ local _HELPERS = {
 -- arming themselves and cancel the re-equip we are in the middle of registering.
 local _in_break = false
 
--- the flag is lowered a tick late rather than on the line after the vanilla handler
--- returns. if the engine dispatches OnEquipPrimary asynchronously, the leftover that
--- HandleHandler put in the hand arrives after the flag would already be down, and the
--- equip listener reads it as the player arming themselves -- which discards the pending
--- re-equip. costs one boolean per break and changes nothing if dispatch is synchronous.
+-- the flag is lowered a tick late, not on the line after the vanilla handler returns.
+-- measured in-game: a single break dispatches OnEquipPrimary twice -- once synchronously
+-- from inside HandleHandler's setPrimaryHandItem, and once again after the handler has
+-- already returned. lowering the flag immediately leaves that second one unguarded, and
+-- the leftover it carries is a fresh, undamaged weapon that clears every check in the
+-- equip listener, so vanilla ends up discarding our pending re-equip. this is the whole
+-- reason the feature did nothing on the reload key.
 local _clear_scheduled = false
 
 local function _clear_in_break()
@@ -111,7 +113,7 @@ local function _patch_onbreak_table()
 
   OnBreak.__NULL0X686F_PATCHED = true
   local wrapped_count = 0
-  local probed_count = 0
+  local skipped_count = 0
 
   for name, original_fn in pairs(OnBreak) do
     if type(original_fn) == "function" and not _HELPERS[name] then
@@ -140,20 +142,11 @@ local function _patch_onbreak_table()
         return result
       end
     elseif _HELPERS[name] then
-      -- temporary scaffolding: observe only. the helpers must never run feature logic,
-      -- because at this point the weapon's own handler has not finished and the vanilla
-      -- leftover parts have not all spawned yet -- mutating the item here is what made
-      -- an earlier version destroy the base game's own drops.
-      probed_count = probed_count + 1
-      OnBreak[name] = function(item, player, ...)
-        log.debug(_LOG, "helper probe name=", name,
-          "type=", item and item.getFullType and item:getFullType() or nil)
-        return original_fn(item, player, ...)
-      end
+      skipped_count = skipped_count + 1
     end
   end
 
-  log.debug(_LOG, "patched handlers=", wrapped_count, "probed shared helpers=", probed_count)
+  log.debug(_LOG, "patched handlers=", wrapped_count, "skipped shared helpers=", skipped_count)
 end
 
 -- arming yourself by hand cancels the pending re-equip, so the key does nothing
