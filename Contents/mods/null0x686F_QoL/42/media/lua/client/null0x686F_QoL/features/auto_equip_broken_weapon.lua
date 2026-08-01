@@ -6,6 +6,11 @@
 local log = require("null0x686F_QoL/log")
 local setup = require("null0x686F_QoL/setup")
 
+-- every log call passes its parts as separate varargs instead of concatenating.
+-- the shared logger joins them itself, after its level guard, so a player running
+-- at "info" never builds the string.
+local _LOG = "auto_equip_broken_weapon.lua"
+
 local _is_patched = false
 local _get_core = getCore
 local _get_specific_player = getSpecificPlayer
@@ -32,6 +37,7 @@ local _pending = nil
 
 -- mirrors vanilla ISInventoryPaneContextMenu.dropItem
 local function _drop_weapon(playerObj, item)
+  log.debug(_LOG, "drop leftover=", item:getFullType(), "inHand=", playerObj:isHandItem(item))
   playerObj:removeAttachedItem(item)
   if playerObj:isHandItem(item) then
     ISTimedActionQueue.add(ISUnequipAction:new(playerObj, item, 1, "drop"))
@@ -41,6 +47,7 @@ local function _drop_weapon(playerObj, item)
 end
 
 local function _destroy_weapon(playerObj, item)
+  log.debug(_LOG, "destroy leftover=", item:getFullType())
   playerObj:removeFromHands(item)
   playerObj:getInventory():Remove(item)
 end
@@ -49,9 +56,13 @@ end
 -- leftover part and the vanilla debris has already spawned.
 local function _apply_break_behavior(playerObj)
   local item = playerObj:getPrimaryHandItem()
-  if not item then return end
+  if not item then
+    log.debug(_LOG, "apply_break_behavior: primary hand already empty, nothing to apply")
+    return
+  end
 
   local behavior = setup.get_broken_weapon_behavior()
+  log.debug(_LOG, "apply_break_behavior behavior=", behavior, "leftover=", item:getFullType())
   if behavior == "drop" then
     _drop_weapon(playerObj, item)
   elseif behavior == "destroy" then
@@ -63,43 +74,79 @@ end
 local function _on_weapon_broke(playerObj, original_full_type)
   _pending = original_full_type
   _apply_break_behavior(playerObj)
-  log.debug("auto_equip_broken_weapon.lua BROKE type=" .. original_full_type)
+  log.debug(_LOG, "BROKE type=", original_full_type)
 end
 
 -- wrap every per-weapon OnBreak handler. at the moment the engine calls it, `item`
 -- is still the original, unbroken reference -- capture its fullType before letting
 -- the vanilla handler transform it into a leftover part.
 local function _patch_onbreak_table()
-  if OnBreak and not OnBreak.__NULL0X686F_PATCHED then
-    OnBreak.__NULL0X686F_PATCHED = true
-    for name, original_fn in pairs(OnBreak) do
-      if type(original_fn) == "function" and not _HELPERS[name] then
-        OnBreak[name] = function(item, player, ...)
-          local captured_type = item and item.getFullType and item:getFullType() or nil
-          local was_primary = captured_type and player and player:getPrimaryHandItem() == item
+  if not OnBreak then
+    log.debug(_LOG, "patch skipped: OnBreak table does not exist yet")
+    return
+  end
+  if OnBreak.__NULL0X686F_PATCHED then
+    log.debug(_LOG, "patch skipped: OnBreak already patched")
+    return
+  end
 
-          _in_break = true
-          local result = original_fn(item, player, ...)
-          _in_break = false
+  OnBreak.__NULL0X686F_PATCHED = true
+  local wrapped_count = 0
+  local skipped_count = 0
 
-          if was_primary and setup.is_feature_enabled("auto_equip_broken_weapon") then
-            _on_weapon_broke(player, captured_type)
-          end
+  for name, original_fn in pairs(OnBreak) do
+    if type(original_fn) == "function" and not _HELPERS[name] then
+      wrapped_count = wrapped_count + 1
+      OnBreak[name] = function(item, player, ...)
+        local captured_type = item and item.getFullType and item:getFullType() or nil
+        local was_primary = captured_type and player and player:getPrimaryHandItem() == item
 
-          return result
+        log.debug(_LOG, "onbreak enter handler=", name, "type=", captured_type, "wasPrimary=", was_primary)
+
+        _in_break = true
+        local result = original_fn(item, player, ...)
+        _in_break = false
+
+        local leftover = player and player:getPrimaryHandItem()
+        log.debug(_LOG, "onbreak vanilla done handler=", name,
+          "leftover=", leftover and leftover:getFullType() or "<empty hand>")
+
+        if was_primary and setup.is_feature_enabled("auto_equip_broken_weapon") then
+          _on_weapon_broke(player, captured_type)
+        else
+          log.debug(_LOG, "onbreak ignored handler=", name,
+            "reason=", not was_primary and "not primary hand" or "feature disabled")
         end
+
+        return result
       end
+    elseif _HELPERS[name] then
+      skipped_count = skipped_count + 1
     end
   end
+
+  log.debug(_LOG, "patched handlers=", wrapped_count, "skipped shared helpers=", skipped_count)
 end
 
 -- arming yourself by hand cancels the pending re-equip, so the key does nothing
 -- instead of handing over a redundant duplicate.
 local function _on_equip_primary(_player, item)
-  if _in_break then return end
-  if not item or not _instanceof(item, "HandWeapon") then return end
-  if item:isBroken() or item:getCondition() <= 0 then return end
+  if _in_break then
+    log.debug(_LOG, "equip_primary ignored: vanilla break still running")
+    return
+  end
+  if not item or not _instanceof(item, "HandWeapon") then
+    log.debug(_LOG, "equip_primary ignored: not a HandWeapon")
+    return
+  end
+  if item:isBroken() or item:getCondition() <= 0 then
+    log.debug(_LOG, "equip_primary ignored: item is broken type=", item:getFullType())
+    return
+  end
 
+  if _pending then
+    log.debug(_LOG, "equip_primary cleared pending=", _pending, "replacedBy=", item:getFullType())
+  end
   _pending = nil
 end
 
@@ -110,18 +157,27 @@ local function _find_replacement(inv, full_type)
 end
 
 local function _try_reequip(playerObj)
-  if not _pending then return end
+  if not _pending then
+    log.debug(_LOG, "reequip skipped: nothing pending")
+    return
+  end
 
   local replacement = _find_replacement(playerObj:getInventory(), _pending)
-  if not replacement then return end
+  if not replacement then
+    log.debug(_LOG, "reequip skipped: no intact replacement in inventory for", _pending)
+    return
+  end
 
   local two_hands = false
   if replacement.isTwoHandWeapon and replacement:isTwoHandWeapon() then
     two_hands = true
+    log.debug(_LOG, "reequip twoHands decided by isTwoHandWeapon")
   elseif replacement.isRequiresEquippedBothHands and replacement:isRequiresEquippedBothHands() then
     two_hands = true
+    log.debug(_LOG, "reequip twoHands decided by isRequiresEquippedBothHands")
   end
 
+  log.debug(_LOG, "reequip queued type=", _pending, "twoHands=", two_hands)
   ISTimedActionQueue.add(ISEquipWeaponAction:new(playerObj, replacement, 50, true, two_hands))
   _pending = nil
 end
@@ -130,22 +186,32 @@ end
 -- a firearm and a fresh weapon for melee, and the two never apply at once. firearms
 -- define no OnBreak handler, so they never set _pending and fall through to vanilla.
 local function _on_key_pressed(key)
+  -- both guards stay ahead of any logging: this fires on every keystroke, and the
+  -- cheap enabled lookup must short-circuit before the isKey call into Java.
   if not setup.is_feature_enabled("auto_equip_broken_weapon") then return end
   if not _get_core():isKey("ReloadWeapon", key) then return end
 
+  log.debug(_LOG, "reload key pressed, pending=", _pending or "<none>")
+
   local player = _get_specific_player(0)
-  if not player or player:isDead() then return end
+  if not player or player:isDead() then
+    log.debug(_LOG, "reload ignored: no living player")
+    return
+  end
 
   _try_reequip(player)
 end
 
 local function _init_auto_equip_broken_weapon()
-  if _is_patched then return end
+  if _is_patched then
+    log.debug(_LOG, "init skipped: already initialized")
+    return
+  end
   _patch_onbreak_table()
   Events.OnEquipPrimary.Add(_on_equip_primary)
   Events.OnKeyPressed.Add(_on_key_pressed)
   _is_patched = true
-  log.debug("auto_equip_broken_weapon.lua initialized")
+  log.debug(_LOG, "initialized")
 end
 
 return {
