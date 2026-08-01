@@ -30,6 +30,25 @@ local _HELPERS = {
 -- arming themselves and cancel the re-equip we are in the middle of registering.
 local _in_break = false
 
+-- the flag is lowered a tick late rather than on the line after the vanilla handler
+-- returns. if the engine dispatches OnEquipPrimary asynchronously, the leftover that
+-- HandleHandler put in the hand arrives after the flag would already be down, and the
+-- equip listener reads it as the player arming themselves -- which discards the pending
+-- re-equip. costs one boolean per break and changes nothing if dispatch is synchronous.
+local _clear_scheduled = false
+
+local function _clear_in_break()
+  Events.OnTick.Remove(_clear_in_break)
+  _clear_scheduled = false
+  _in_break = false
+end
+
+local function _schedule_in_break_clear()
+  if _clear_scheduled then return end
+  _clear_scheduled = true
+  Events.OnTick.Add(_clear_in_break)
+end
+
 -- fullType of the weapon that broke and is still waiting for the re-equip key.
 -- Only the primary hand is tracked: two-handed weapons occupy both slots but match
 -- primary first, so the secondary slot only ever holds torches and the like.
@@ -92,7 +111,7 @@ local function _patch_onbreak_table()
 
   OnBreak.__NULL0X686F_PATCHED = true
   local wrapped_count = 0
-  local skipped_count = 0
+  local probed_count = 0
 
   for name, original_fn in pairs(OnBreak) do
     if type(original_fn) == "function" and not _HELPERS[name] then
@@ -105,7 +124,7 @@ local function _patch_onbreak_table()
 
         _in_break = true
         local result = original_fn(item, player, ...)
-        _in_break = false
+        _schedule_in_break_clear()
 
         local leftover = player and player:getPrimaryHandItem()
         log.debug(_LOG, "onbreak vanilla done handler=", name,
@@ -121,11 +140,20 @@ local function _patch_onbreak_table()
         return result
       end
     elseif _HELPERS[name] then
-      skipped_count = skipped_count + 1
+      -- temporary scaffolding: observe only. the helpers must never run feature logic,
+      -- because at this point the weapon's own handler has not finished and the vanilla
+      -- leftover parts have not all spawned yet -- mutating the item here is what made
+      -- an earlier version destroy the base game's own drops.
+      probed_count = probed_count + 1
+      OnBreak[name] = function(item, player, ...)
+        log.debug(_LOG, "helper probe name=", name,
+          "type=", item and item.getFullType and item:getFullType() or nil)
+        return original_fn(item, player, ...)
+      end
     end
   end
 
-  log.debug(_LOG, "patched handlers=", wrapped_count, "skipped shared helpers=", skipped_count)
+  log.debug(_LOG, "patched handlers=", wrapped_count, "probed shared helpers=", probed_count)
 end
 
 -- arming yourself by hand cancels the pending re-equip, so the key does nothing
@@ -135,8 +163,12 @@ local function _on_equip_primary(_player, item)
     log.debug(_LOG, "equip_primary ignored: vanilla break still running")
     return
   end
-  if not item or not _instanceof(item, "HandWeapon") then
-    log.debug(_LOG, "equip_primary ignored: not a HandWeapon")
+  if not item then
+    log.debug(_LOG, "equip_primary ignored: item is nil (unequip)")
+    return
+  end
+  if not _instanceof(item, "HandWeapon") then
+    log.debug(_LOG, "equip_primary ignored: not a HandWeapon type=", item:getFullType())
     return
   end
   if item:isBroken() or item:getCondition() <= 0 then
@@ -144,9 +176,7 @@ local function _on_equip_primary(_player, item)
     return
   end
 
-  if _pending then
-    log.debug(_LOG, "equip_primary cleared pending=", _pending, "replacedBy=", item:getFullType())
-  end
+  log.debug(_LOG, "equip_primary accepted type=", item:getFullType(), "pending=", _pending or "<none>")
   _pending = nil
 end
 
