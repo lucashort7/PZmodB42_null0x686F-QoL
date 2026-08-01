@@ -7,12 +7,9 @@ local mod_options = require("null0x686F_QoL/modoptions")
 -- QoL Features Loader (1 file per feature)
 -- ==============================================================================
 local features_map = {
-  dry_towel_hotkey = require("null0x686F_QoL/features/dry_towel_hotkey"),
   inventory_title = require("null0x686F_QoL/features/inventory_title"),
   worn_items_toggle = require("null0x686F_QoL/features/worn_items_toggle"),
-  gas_siphon_walk = require("null0x686F_QoL/features/gas_siphon_walk"),
   auto_unset_alarms = require("null0x686F_QoL/features/auto_unset_alarms"),
-  fence_interaction_priority = require("null0x686F_QoL/features/fence_interaction_priority"),
   rip_all_clothing = require("null0x686F_QoL/features/quick_context_actions/rip_all_clothing"),
   dismantle_all_electronics = require("null0x686F_QoL/features/quick_context_actions/dismantle_all_electronics"),
   walk_and_equip = require("null0x686F_QoL/features/walk_and_equip"),
@@ -40,7 +37,7 @@ local function _init_feature_hooks()
         v.init()
         log.debug(k .. " hook loaded!")
       end
-      log.info("null0x686F_QoL_V2 :: All 11 features loaded successfully!")
+      log.info("null0x686F_QoL_V2 :: All 8 features loaded successfully!")
     end)
   end)
 
