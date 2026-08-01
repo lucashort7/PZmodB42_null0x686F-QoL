@@ -1,6 +1,5 @@
 local qol_setup = require("null0x686F_QoL/setup")
 local log = require("null0x686F_QoL/log")
-local cfg = require("null0x686F_QoL/cfg")
 
 local _mod_id = "null0x686F_QoL"
 local _mod_name = "null0x686F QoL Options"
@@ -91,7 +90,6 @@ local function _init_mod_options()
       for _, behavior_key in _ipairs(_broken_weapon_behavior_order) do
         behavior_combo:addItem(_broken_weapon_behavior_labels[behavior_key], behavior_key == current_behavior)
       end
-      options:addKeyBind("QoL_ReequipBrokenKey", "Re-Equip Fresh Weapon (when broken)", cfg.AUTO_EQUIP_BROKEN_WEAPON.hotkey)
     end
 
     if i < #SECTION_ORDER then
