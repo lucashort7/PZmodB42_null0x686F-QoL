@@ -1,31 +1,34 @@
+-- Re-equips a fresh copy of the weapon you just broke, on the vanilla reload key.
+-- Inspired by TwisTonFire's "MeleeReloadHotbar" (Workshop 3480305875), which
+-- originated the idea of sharing the reload keybind for this. Detection differs:
+-- that mod infers leftovers from item naming, this one reads the break event.
+
 local log = require("null0x686F_QoL/log")
 local setup = require("null0x686F_QoL/setup")
-local cfg = require("null0x686F_QoL/cfg")
 
 local _is_patched = false
 local _get_core = getCore
 local _get_specific_player = getSpecificPlayer
 local _instanceof = instanceof
-local _mod_id = "null0x686F_QoL"
 
--- keyed by 1=primary, 2=secondary. { full_type, pending } where pending means
--- "this slot broke and is still waiting to be handled by the re-equip hotkey".
-local _last_real_weapon = { [1] = nil, [2] = nil }
+-- OnBreak holds two kinds of function: one handler per weapon, plus these three
+-- shared helpers that nearly every handler calls internally. Wrapping the helpers
+-- too makes a single break re-enter this feature once per helper call.
+local _HELPERS = {
+  GroundHandler = true,
+  HeadHandler = true,
+  HandleHandler = true,
+}
 
-local function _get_hand_item(playerObj, slot)
-  if slot == 1 then return playerObj:getPrimaryHandItem() end
-  return playerObj:getSecondaryHandItem()
-end
+-- true only while a vanilla OnBreak handler is running. HandleHandler puts the
+-- leftover part straight into the hand, which would otherwise look like the player
+-- arming themselves and cancel the re-equip we are in the middle of registering.
+local _in_break = false
 
--- opportunistically remember the last known-good weapon per slot, so that once it
--- transforms into an unrelated leftover item (Base.SmallHandle, etc.) we still know
--- what to search for. cheap: only runs on the low-frequency attack-finished event.
-local function _refresh_slot_if_healthy(playerObj, slot)
-  local item = _get_hand_item(playerObj, slot)
-  if item and _instanceof(item, "HandWeapon") and not item:isBroken() and item:getCondition() > 0 then
-    _last_real_weapon[slot] = { full_type = item:getFullType(), pending = false }
-  end
-end
+-- fullType of the weapon that broke and is still waiting for the re-equip key.
+-- Only the primary hand is tracked: two-handed weapons occupy both slots but match
+-- primary first, so the secondary slot only ever holds torches and the like.
+local _pending = nil
 
 -- mirrors vanilla ISInventoryPaneContextMenu.dropItem
 local function _drop_weapon(playerObj, item)
@@ -42,8 +45,10 @@ local function _destroy_weapon(playerObj, item)
   playerObj:getInventory():Remove(item)
 end
 
-local function _apply_break_behavior(playerObj, slot)
-  local item = _get_hand_item(playerObj, slot)
+-- runs after vanilla finished transforming the weapon, so the hand now holds the
+-- leftover part and the vanilla debris has already spawned.
+local function _apply_break_behavior(playerObj)
+  local item = playerObj:getPrimaryHandItem()
   if not item then return end
 
   local behavior = setup.get_broken_weapon_behavior()
@@ -55,33 +60,30 @@ local function _apply_break_behavior(playerObj, slot)
   -- "nothing" -> leave the leftover equipped, exactly as vanilla would
 end
 
-local function _on_weapon_broke(playerObj, slot, original_full_type)
-  _last_real_weapon[slot] = { full_type = original_full_type, pending = true }
-  _apply_break_behavior(playerObj, slot)
-  log.debug("auto_equip_broken_weapon.lua BROKE slot=" .. slot .. " type=" .. original_full_type)
+local function _on_weapon_broke(playerObj, original_full_type)
+  _pending = original_full_type
+  _apply_break_behavior(playerObj)
+  log.debug("auto_equip_broken_weapon.lua BROKE type=" .. original_full_type)
 end
 
--- primary interception: wrap every OnBreak.<Weapon> handler. at the moment the engine
--- calls it, `item` is still the original, unbroken reference -- capture its fullType
--- before letting the vanilla handler transform/remove it into a leftover part.
+-- wrap every per-weapon OnBreak handler. at the moment the engine calls it, `item`
+-- is still the original, unbroken reference -- capture its fullType before letting
+-- the vanilla handler transform it into a leftover part.
 local function _patch_onbreak_table()
-  if OnBreak and not OnBreak.__HORT_PATCHED then
-    OnBreak.__HORT_PATCHED = true
+  if OnBreak and not OnBreak.__NULL0X686F_PATCHED then
+    OnBreak.__NULL0X686F_PATCHED = true
     for name, original_fn in pairs(OnBreak) do
-      if type(original_fn) == "function" then
+      if type(original_fn) == "function" and not _HELPERS[name] then
         OnBreak[name] = function(item, player, ...)
           local captured_type = item and item.getFullType and item:getFullType() or nil
           local was_primary = captured_type and player and player:getPrimaryHandItem() == item
-          local was_secondary = captured_type and player and player:getSecondaryHandItem() == item
 
+          _in_break = true
           local result = original_fn(item, player, ...)
+          _in_break = false
 
-          if setup.is_feature_enabled("auto_equip_broken_weapon") then
-            if was_primary then
-              _on_weapon_broke(player, 1, captured_type)
-            elseif was_secondary then
-              _on_weapon_broke(player, 2, captured_type)
-            end
+          if was_primary and setup.is_feature_enabled("auto_equip_broken_weapon") then
+            _on_weapon_broke(player, captured_type)
           end
 
           return result
@@ -91,25 +93,14 @@ local function _patch_onbreak_table()
   end
 end
 
--- fallback for weapon types with no OnBreak handler (e.g. firearms): they just sit at
--- condition 0 on the SAME fullType with no transformation, so no leftover-tracking is
--- needed. if OnBreak already handled this item, `weapon` no longer matches the current
--- hand item (it was replaced/removed), so this naturally no-ops in that case.
-local function _on_player_attack_finished(playerObj, weapon)
-  if not playerObj then return end
+-- arming yourself by hand cancels the pending re-equip, so the key does nothing
+-- instead of handing over a redundant duplicate.
+local function _on_equip_primary(_player, item)
+  if _in_break then return end
+  if not item or not _instanceof(item, "HandWeapon") then return end
+  if item:isBroken() or item:getCondition() <= 0 then return end
 
-  _refresh_slot_if_healthy(playerObj, 1)
-  _refresh_slot_if_healthy(playerObj, 2)
-
-  if not setup.is_feature_enabled("auto_equip_broken_weapon") then return end
-  if not weapon or not weapon.isBroken then return end
-  if not (weapon:isBroken() or (weapon.getCondition and weapon:getCondition() <= 0)) then return end
-
-  if playerObj:getPrimaryHandItem() == weapon then
-    _on_weapon_broke(playerObj, 1, weapon:getFullType())
-  elseif playerObj:getSecondaryHandItem() == weapon then
-    _on_weapon_broke(playerObj, 2, weapon:getFullType())
-  end
+  _pending = nil
 end
 
 local function _find_replacement(inv, full_type)
@@ -118,13 +109,11 @@ local function _find_replacement(inv, full_type)
   end)
 end
 
-local function _try_reequip_slot(playerObj, slot)
-  local cached = _last_real_weapon[slot]
-  if not cached or not cached.pending then return false end
+local function _try_reequip(playerObj)
+  if not _pending then return end
 
-  local inv = playerObj:getInventory()
-  local replacement = _find_replacement(inv, cached.full_type)
-  if not replacement then return false end
+  local replacement = _find_replacement(playerObj:getInventory(), _pending)
+  if not replacement then return end
 
   local two_hands = false
   if replacement.isTwoHandWeapon and replacement:isTwoHandWeapon() then
@@ -133,35 +122,27 @@ local function _try_reequip_slot(playerObj, slot)
     two_hands = true
   end
 
-  ISTimedActionQueue.add(ISEquipWeaponAction:new(playerObj, replacement, 50, slot == 1, two_hands))
-  cached.pending = false
-  return true
+  ISTimedActionQueue.add(ISEquipWeaponAction:new(playerObj, replacement, 50, true, two_hands))
+  _pending = nil
 end
 
+-- shares the vanilla reload keybind: "make my weapon usable again" means reload for
+-- a firearm and a fresh weapon for melee, and the two never apply at once. firearms
+-- define no OnBreak handler, so they never set _pending and fall through to vanilla.
 local function _on_key_pressed(key)
   if not setup.is_feature_enabled("auto_equip_broken_weapon") then return end
-
-  local current_hotkey = cfg.AUTO_EQUIP_BROKEN_WEAPON.hotkey
-  if PZAPI and PZAPI.ModOptions and PZAPI.ModOptions.getOptions then
-    local opts = PZAPI.ModOptions:getOptions(_mod_id)
-    if opts then
-      local kb = opts:getOption("QoL_ReequipBrokenKey")
-      if kb and kb:getValue() then current_hotkey = kb:getValue() end
-    end
-  end
-  if key ~= current_hotkey then return end
+  if not _get_core():isKey("ReloadWeapon", key) then return end
 
   local player = _get_specific_player(0)
   if not player or player:isDead() then return end
 
-  if _try_reequip_slot(player, 1) then return end
-  _try_reequip_slot(player, 2)
+  _try_reequip(player)
 end
 
 local function _init_auto_equip_broken_weapon()
   if _is_patched then return end
   _patch_onbreak_table()
-  Events.OnPlayerAttackFinished.Add(_on_player_attack_finished)
+  Events.OnEquipPrimary.Add(_on_equip_primary)
   Events.OnKeyPressed.Add(_on_key_pressed)
   _is_patched = true
   log.debug("auto_equip_broken_weapon.lua initialized")
