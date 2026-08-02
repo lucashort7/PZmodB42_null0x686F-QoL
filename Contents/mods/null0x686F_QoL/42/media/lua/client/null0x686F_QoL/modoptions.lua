@@ -3,7 +3,7 @@ local log = require("null0x686F_QoL/log")
 local defs = require("null0x686F_QoL/modoptions_defs")
 
 local MOD_ID = "null0x686F_QoL"
-local MOD_NAME = "null0x686F QoL Options"
+local MOD_NAME_KEY = "UI_null0x686F_QoL_options_title"
 
 local _is_patched = false
 
@@ -11,24 +11,29 @@ local function _build_options(options)
   local def_r, def_g, def_b, def_a = qol_setup.get_zombie_outline_custom_color()
 
   for i, section in ipairs(defs.SECTION_ORDER) do
-    options:addTitle(defs.SECTION_TITLES[section])
+    options:addTitle(getText(defs.SECTION_TITLE_KEYS[section]))
 
     for _, def in ipairs(defs.FEATURE_DEFS) do
       if def.section == section then
-        options:addTickBox(def.pzapi_key, def.label, qol_setup.is_feature_enabled(def.key), def.tooltip)
+        options:addTickBox(def.pzapi_key,
+          getText(def.label_key),
+          qol_setup.is_feature_enabled(def.key),
+          getText(def.label_key .. "_tooltip"))
       end
     end
 
     if section == "combat" then
-      options:addColorPicker("ZombieOutline_Color", "Custom Zombie Outline Color",
+      options:addColorPicker("ZombieOutline_Color",
+        getText("UI_null0x686F_QoL_outline_color"),
         def_r, def_g, def_b, def_a,
-        "Changes the color of the zombie outline when aiming in melee mode.")
+        getText("UI_null0x686F_QoL_outline_color_tooltip"))
     elseif section == "weapons" then
-      local combo = options:addComboBox("QoL_BrokenWeaponBehavior", "On Weapon Break",
-        "Choose what happens to your weapon automatically when it breaks in combat.")
+      local combo = options:addComboBox("QoL_BrokenWeaponBehavior",
+        getText("UI_null0x686F_QoL_broken_behavior"),
+        getText("UI_null0x686F_QoL_broken_behavior_tooltip"))
       local current = qol_setup.get_broken_weapon_behavior()
       for _, behavior in ipairs(defs.BROKEN_WEAPON_ORDER) do
-        combo:addItem(defs.BROKEN_WEAPON_LABELS[behavior], behavior == current)
+        combo:addItem(getText(defs.BROKEN_WEAPON_LABEL_KEYS[behavior]), behavior == current)
       end
     end
 
@@ -81,7 +86,7 @@ end
 local function _init_mod_options()
   if not (PZAPI and PZAPI.ModOptions and PZAPI.ModOptions.create) then return end
 
-  local options = PZAPI.ModOptions:create(MOD_ID, MOD_NAME)
+  local options = PZAPI.ModOptions:create(MOD_ID, getText(MOD_NAME_KEY))
   if not options then return end
 
   _build_options(options)

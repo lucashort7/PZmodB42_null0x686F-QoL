@@ -190,11 +190,11 @@ local function _on_fill_inventory_menu(player_num, context, items)
   end
   if total == 0 then return end
 
-  local anchor = context:addOption("Rip Clothing")
+  local anchor = context:addOption(getText("ContextMenu_null0x686F_QoL_rip_clothing"))
   local submenu = context:getNew(context)
   context:addSubMenu(anchor, submenu)
 
-  local all_option = submenu:addOption("Rip All", player, function()
+  local all_option = submenu:addOption(getText("ContextMenu_null0x686F_QoL_rip_all"), player, function()
     _rip_clothing(player, container, nil)
   end)
   if not tool and needs_tool_available then
@@ -206,7 +206,7 @@ local function _on_fill_inventory_menu(player_num, context, items)
   for i = 1, #FABRIC_TYPES do
     local ftype = FABRIC_TYPES[i]
     if #buckets[ftype] > 0 then
-      local option = submenu:addOption("Rip " .. ftype .. " Only", player, function()
+      local option = submenu:addOption(getText("ContextMenu_null0x686F_QoL_rip_fabric_only", ftype), player, function()
         _rip_clothing(player, container, ftype)
       end)
       _add_tool_status(option, ftype, tool)

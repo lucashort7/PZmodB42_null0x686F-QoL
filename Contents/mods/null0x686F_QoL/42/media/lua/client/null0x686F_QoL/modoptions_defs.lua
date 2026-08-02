@@ -3,8 +3,12 @@
 -- owned the declaration, the widget construction, the read-back and a patch on
 -- a third-party library.
 --
--- this is also where the getText() keys will go when the strings move to
--- Translate/EN -- they belong with the declaration, not with the UI code.
+-- holds getText() KEYS, not text. resolution happens when the UI is built --
+-- calling getText() in a table literal would evaluate at file-parse time, and
+-- the translation table is not guaranteed loaded that early.
+--
+-- the tooltip key is always the label key plus "_tooltip", so it is derived
+-- rather than stored: two fields that must agree is two fields that can drift.
 
 -- single source of truth for every boolean feature toggle: drives the
 -- ModOptions tickboxes, the read-back in modoptions.sync(), and the debug
@@ -17,79 +21,69 @@ local FEATURE_DEFS = {
     key = "zombie_outline",
     pzapi_key = "ZombieOutline_Enabled",
     section = "combat",
-    label = "Enable Custom Zombie Outline",
-    tooltip = "Toggles custom color highlighting for zombies when aiming.",
+    label_key = "UI_null0x686F_QoL_zombie_outline",
   },
   {
     key = "inv_name",
     pzapi_key = "QoL_InvName",
     section = "inventory",
-    label = "Player Name in Inventory",
-    tooltip = "Adds the character's name to the inventory window title.",
+    label_key = "UI_null0x686F_QoL_inv_name",
   },
   {
     key = "hide_worn",
     pzapi_key = "QoL_HideWorn",
     section = "inventory",
-    label = "Hide Worn Items",
-    tooltip = "Hides worn clothing from the main inventory list to declutter.",
+    label_key = "UI_null0x686F_QoL_hide_worn",
   },
   {
     key = "quick_context",
     pzapi_key = "QoL_QuickContext",
     section = "inventory",
-    label = "Quick Context Menu Actions",
-    tooltip = "Adds 1-click context menu shortcuts for Rip All Clothing, "
-      .. "Swap Gas Mask Filter, and Bandages.",
+    label_key = "UI_null0x686F_QoL_quick_context",
   },
   {
     key = "walk_and_equip",
     pzapi_key = "QoL_WalkAndEquip",
     section = "inventory",
-    label = "Walk/Aim While Equipping Clothing",
-    tooltip = "Allows walking or aiming while putting on/adjusting clothing "
-      .. "without interrupting the action.",
+    label_key = "UI_null0x686F_QoL_walk_and_equip",
   },
   {
     key = "auto_unset_alarms",
     pzapi_key = "QoL_AutoUnsetAlarms",
     section = "survival",
-    label = "Auto-Unset Alarms",
-    tooltip = "Automatically turns off alarms on looted digital watches and clocks.",
+    label_key = "UI_null0x686F_QoL_auto_unset_alarms",
   },
   {
     key = "auto_equip_broken_weapon",
     pzapi_key = "QoL_AutoEquipBroken",
     section = "weapons",
-    label = "Auto-Handle Broken Weapons",
-    tooltip = "Automatically handles your weapon when it breaks, and lets you "
-      .. "re-equip a fresh copy with a hotkey.",
+    label_key = "UI_null0x686F_QoL_auto_equip_broken_weapon",
   },
 }
 
 local SECTION_ORDER = { "combat", "inventory", "survival", "weapons" }
 
-local SECTION_TITLES = {
-  combat = "--- Combat & Visual Highlights ---",
-  inventory = "--- Inventory & Clothing ---",
-  survival = "--- Survival & World Interactions ---",
-  weapons = "--- Weapons ---",
+local SECTION_TITLE_KEYS = {
+  combat = "UI_null0x686F_QoL_section_combat",
+  inventory = "UI_null0x686F_QoL_section_inventory",
+  survival = "UI_null0x686F_QoL_section_survival",
+  weapons = "UI_null0x686F_QoL_section_weapons",
 }
 
 -- order is the contract with the combo box: PZAPI hands back the selected
 -- index, so this table is what turns that number into a behaviour key.
 local BROKEN_WEAPON_ORDER = { "drop", "destroy", "nothing" }
 
-local BROKEN_WEAPON_LABELS = {
-  drop = "Drop on Ground",
-  destroy = "Destroy",
-  nothing = "Do Nothing",
+local BROKEN_WEAPON_LABEL_KEYS = {
+  drop = "UI_null0x686F_QoL_broken_drop",
+  destroy = "UI_null0x686F_QoL_broken_destroy",
+  nothing = "UI_null0x686F_QoL_broken_nothing",
 }
 
 return {
   FEATURE_DEFS = FEATURE_DEFS,
   SECTION_ORDER = SECTION_ORDER,
-  SECTION_TITLES = SECTION_TITLES,
+  SECTION_TITLE_KEYS = SECTION_TITLE_KEYS,
   BROKEN_WEAPON_ORDER = BROKEN_WEAPON_ORDER,
-  BROKEN_WEAPON_LABELS = BROKEN_WEAPON_LABELS,
+  BROKEN_WEAPON_LABEL_KEYS = BROKEN_WEAPON_LABEL_KEYS,
 }
