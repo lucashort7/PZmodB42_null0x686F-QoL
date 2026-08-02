@@ -33,11 +33,13 @@ local function _init_feature_hooks()
 
   local status, _ = pcall(function ()
     Events.OnCreatePlayer.Add(function ()
-      for k, v in pairs(features_map) do
-        v.init()
-        log.debug(k .. " hook loaded!")
+      local loaded = 0
+      for name, feature in pairs(features_map) do
+        feature.init()
+        loaded = loaded + 1
+        log.debug(name .. " hook loaded!")
       end
-      log.info("null0x686F_QoL_V2 :: All 8 features loaded successfully!")
+      log.info("null0x686F_QoL_V2 :: " .. loaded .. " features loaded successfully!")
     end)
   end)
 
@@ -67,7 +69,7 @@ local function _patch_main_options()
   end
 end
 
-local function _on_game_state_enter(state)
+local function _on_game_state_enter(_state)
   if qol_setup.sync_mod_options then
     qol_setup.sync_mod_options("OnGameStateEnter")
   end
