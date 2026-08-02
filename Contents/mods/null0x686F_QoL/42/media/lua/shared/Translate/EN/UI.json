@@ -1,0 +1,38 @@
+{
+    "UI_null0x686F_QoL_options_title": "null0x686F QoL Options",
+
+    "UI_null0x686F_QoL_section_combat": "--- Combat & Visual Highlights ---",
+    "UI_null0x686F_QoL_section_inventory": "--- Inventory & Clothing ---",
+    "UI_null0x686F_QoL_section_survival": "--- Survival & World Interactions ---",
+    "UI_null0x686F_QoL_section_weapons": "--- Weapons ---",
+
+    "UI_null0x686F_QoL_zombie_outline": "Enable Custom Zombie Outline",
+    "UI_null0x686F_QoL_zombie_outline_tooltip": "Toggles custom color highlighting for zombies when aiming.",
+
+    "UI_null0x686F_QoL_inv_name": "Player Name in Inventory",
+    "UI_null0x686F_QoL_inv_name_tooltip": "Adds the character's name to the inventory window title.",
+
+    "UI_null0x686F_QoL_hide_worn": "Hide Worn Items",
+    "UI_null0x686F_QoL_hide_worn_tooltip": "Hides worn clothing from the main inventory list to declutter.",
+
+    "UI_null0x686F_QoL_quick_context": "Quick Context Menu Actions",
+    "UI_null0x686F_QoL_quick_context_tooltip": "Adds 1-click context menu shortcuts for Rip All Clothing, Swap Gas Mask Filter, and Bandages.",
+
+    "UI_null0x686F_QoL_walk_and_equip": "Walk/Aim While Equipping Clothing",
+    "UI_null0x686F_QoL_walk_and_equip_tooltip": "Allows walking or aiming while putting on/adjusting clothing without interrupting the action.",
+
+    "UI_null0x686F_QoL_auto_unset_alarms": "Auto-Unset Alarms",
+    "UI_null0x686F_QoL_auto_unset_alarms_tooltip": "Automatically turns off alarms on looted digital watches and clocks.",
+
+    "UI_null0x686F_QoL_auto_equip_broken_weapon": "Auto-Handle Broken Weapons",
+    "UI_null0x686F_QoL_auto_equip_broken_weapon_tooltip": "Automatically handles your weapon when it breaks, and lets you re-equip a fresh copy with a hotkey.",
+
+    "UI_null0x686F_QoL_outline_color": "Custom Zombie Outline Color",
+    "UI_null0x686F_QoL_outline_color_tooltip": "Changes the color of the zombie outline when aiming in melee mode.",
+
+    "UI_null0x686F_QoL_broken_behavior": "On Weapon Break",
+    "UI_null0x686F_QoL_broken_behavior_tooltip": "Choose what happens to your weapon automatically when it breaks in combat.",
+    "UI_null0x686F_QoL_broken_drop": "Drop on Ground",
+    "UI_null0x686F_QoL_broken_destroy": "Destroy",
+    "UI_null0x686F_QoL_broken_nothing": "Do Nothing"
+}
