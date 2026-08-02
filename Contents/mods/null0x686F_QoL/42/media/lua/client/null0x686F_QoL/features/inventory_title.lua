@@ -3,7 +3,6 @@ local setup = require("null0x686F_QoL/setup")
 
 local _is_patched = false
 local _get_specific_player = getSpecificPlayer
-local _get_core = getCore
 
 local function _patch_inventory_title()
   if _is_patched then return end

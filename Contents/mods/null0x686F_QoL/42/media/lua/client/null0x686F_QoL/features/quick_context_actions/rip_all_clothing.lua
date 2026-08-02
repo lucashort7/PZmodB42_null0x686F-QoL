@@ -5,7 +5,6 @@ local log = require("null0x686F_QoL/log")
 local setup = require("null0x686F_QoL/setup")
 
 local _is_patched = false
-local _get_core = getCore
 
 ISRipClothingAction = ISBaseTimedAction:derive("ISRipClothingAction")
 
@@ -31,7 +30,8 @@ end
 
 function ISRipClothingAction:perform()
   local fabric_type = self.item.getFabricType and self.item:getFabricType()
-  local fabric_def = fabric_type and ClothingRecipesDefinitions and ClothingRecipesDefinitions["FabricType"] and ClothingRecipesDefinitions["FabricType"][fabric_type]
+  local fabric_types = ClothingRecipesDefinitions and ClothingRecipesDefinitions["FabricType"]
+  local fabric_def = fabric_type and fabric_types and fabric_types[fabric_type]
   local result_material = fabric_def and fabric_def.material or "Base.RippedSheets"
 
   local inv = self.character:getInventory()
@@ -140,7 +140,8 @@ local function _rip_clothing(player, container, fabric_filter)
   end
 
   if skipped_equipped > 0 or skipped_favorite > 0 or skipped_no_tool > 0 then
-    log.debug("rip_all_clothing: skipped", skipped_equipped, "equipped,", skipped_favorite, "favorite,", skipped_no_tool, "needing a tool")
+    log.debug("rip_all_clothing: skipped", skipped_equipped, "equipped,",
+      skipped_favorite, "favorite,", skipped_no_tool, "needing a tool")
   end
 
   log.debug("rip_all_clothing: queuing", #to_rip, "item(s) for ripping", fabric_filter or "(all types)")

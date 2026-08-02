@@ -1,4 +1,3 @@
-local qol_setup = require("null0x686F_QoL/setup")
 local log = require("null0x686F_QoL/log")
 local zombie_outline = require("null0x686F_QoL/features/zombie_outline")
 local mod_options = require("null0x686F_QoL/modoptions")
@@ -60,9 +59,7 @@ local function _patch_main_options()
       if zombie_outline and zombie_outline.update_configs then
         zombie_outline.update_configs()
       end
-      if qol_setup.sync_mod_options then
-        qol_setup.sync_mod_options("MainOptions:apply patch")
-      end
+      mod_options.sync("MainOptions:apply patch")
     end
 
     state.__setup_hooks = true
@@ -70,9 +67,7 @@ local function _patch_main_options()
 end
 
 local function _on_game_state_enter(_state)
-  if qol_setup.sync_mod_options then
-    qol_setup.sync_mod_options("OnGameStateEnter")
-  end
+  mod_options.sync("OnGameStateEnter")
 end
 
 Events.OnGameStart.Add(_patch_main_options)
