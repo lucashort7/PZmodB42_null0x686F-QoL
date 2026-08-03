@@ -2,11 +2,10 @@ local log = require("null0x686F_QoL/log")
 local setup = require("null0x686F_QoL/setup")
 
 local _is_patched = false
-local _get_core = getCore
 
 local function _patch_wear_clothing()
-  if ISWearClothing and not ISWearClothing.__HORT_PATCHED then
-    ISWearClothing.__HORT_PATCHED = true
+  if ISWearClothing and not ISWearClothing.__NULL0X686F_PATCHED then
+    ISWearClothing.__NULL0X686F_PATCHED = true
     local _old_new = ISWearClothing.new
     function ISWearClothing:new(character, item)
       local o = _old_new(self, character, item)
@@ -20,8 +19,8 @@ local function _patch_wear_clothing()
 end
 
 local function _patch_clothing_extra()
-  if ISClothingExtraAction and not ISClothingExtraAction.__HORT_PATCHED then
-    ISClothingExtraAction.__HORT_PATCHED = true
+  if ISClothingExtraAction and not ISClothingExtraAction.__NULL0X686F_PATCHED then
+    ISClothingExtraAction.__NULL0X686F_PATCHED = true
     local _old_new = ISClothingExtraAction.new
     function ISClothingExtraAction:new(character, item, extra)
       local o = _old_new(self, character, item, extra)
