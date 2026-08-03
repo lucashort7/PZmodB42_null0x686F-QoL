@@ -1,10 +1,15 @@
--- disarms alarm clocks the player can see.
+-- disarms alarm clocks the player can see in world containers.
 --
 -- the trigger is VISIBILITY, not acquisition, and that distinction is the whole
 -- point: an armed alarm makes noise from inside any container -- including a
 -- corpse left on the ground -- and noise draws zombies. so a watch the player
 -- opened, looked at and chose NOT to take is still worth disarming. any
 -- pickup-based trigger leaves exactly that case uncovered.
+--
+-- the player's OWN inventory is excluded, though: vanilla never disarms an alarm
+-- on its own (ISStopAlarmClockAction only calls stopRinging, never
+-- setAlarmSet(false)), so an armed clock the player is carrying is one they
+-- deliberately set. sweeping it would make alarms unusable.
 --
 -- this replaces OnFillInventoryObjectContextMenu, which the docs describe as
 -- "triggered after the context menu for an inventory item is filled" -- it fires
@@ -61,6 +66,13 @@ local function _on_containers_refreshed(inventory_page, reason)
   if reason ~= "end" then return end
   if not setup.is_feature_enabled("auto_unset_alarms") then return end
   if not inventory_page or not inventory_page.backpacks then return end
+
+  -- vanilla builds TWO ISInventoryPage instances and both fire this event: the
+  -- player's own inventory (onCharacter = true) and the loot pane (false) --
+  -- see ISPlayerDataObject.lua:27 and :44. without this guard the player's own
+  -- backpacks are swept too, and an alarm set on a carried watch is cleared on
+  -- the next window refresh.
+  if inventory_page.onCharacter then return end
 
   local disarmed = 0
   for _, button in ipairs(inventory_page.backpacks) do
