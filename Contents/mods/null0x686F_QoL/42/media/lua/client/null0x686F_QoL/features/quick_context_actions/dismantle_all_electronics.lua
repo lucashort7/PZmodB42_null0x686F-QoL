@@ -6,7 +6,6 @@ local setup = require("null0x686F_QoL/setup")
 local core_tools = require("null0x686F_CoreLib/utils/item_finder")
 
 local _is_patched = false
-local _get_core = getCore
 
 -- Vanilla craftRecipe names that cover all "dismantle electronics" cases
 -- (media/scripts/generated/recipes/recipes_electrical.txt and
@@ -161,7 +160,7 @@ local function _on_fill_inventory_menu(player_num, context, items)
 
   local tool = _find_dismantle_tool(player)
 
-  local option = context:addOption("Dismantle All Electronics", player, function()
+  local option = context:addOption(getText("ContextMenu_null0x686F_QoL_dismantle_all_electronics"), player, function()
     _dismantle_all_electronics(player)
   end)
 

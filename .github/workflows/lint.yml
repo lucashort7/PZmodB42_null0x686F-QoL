@@ -1,0 +1,20 @@
+name: Lua Lint (null0x686F QoL)
+
+on:
+  pull_request:
+    paths:
+      - '**/*.lua'
+      - '.luacheckrc'
+  push:
+    branches:
+      - dev
+      - main
+    paths:
+      - '**/*.lua'
+      - '.luacheckrc'
+
+jobs:
+  lint:
+    uses: lucashort7/PZmodB42_null0x686F-Suite/.github/workflows/lua-lint.yml@main
+    with:
+      lua_root: Contents/mods/null0x686F_QoL/42/media/lua

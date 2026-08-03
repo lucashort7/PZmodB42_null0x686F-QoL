@@ -5,7 +5,6 @@ local log = require("null0x686F_QoL/log")
 local setup = require("null0x686F_QoL/setup")
 
 local _is_patched = false
-local _get_core = getCore
 
 ISRipClothingAction = ISBaseTimedAction:derive("ISRipClothingAction")
 
@@ -31,7 +30,8 @@ end
 
 function ISRipClothingAction:perform()
   local fabric_type = self.item.getFabricType and self.item:getFabricType()
-  local fabric_def = fabric_type and ClothingRecipesDefinitions and ClothingRecipesDefinitions["FabricType"] and ClothingRecipesDefinitions["FabricType"][fabric_type]
+  local fabric_types = ClothingRecipesDefinitions and ClothingRecipesDefinitions["FabricType"]
+  local fabric_def = fabric_type and fabric_types and fabric_types[fabric_type]
   local result_material = fabric_def and fabric_def.material or "Base.RippedSheets"
 
   local inv = self.character:getInventory()
@@ -140,7 +140,8 @@ local function _rip_clothing(player, container, fabric_filter)
   end
 
   if skipped_equipped > 0 or skipped_favorite > 0 or skipped_no_tool > 0 then
-    log.debug("rip_all_clothing: skipped", skipped_equipped, "equipped,", skipped_favorite, "favorite,", skipped_no_tool, "needing a tool")
+    log.debug("rip_all_clothing: skipped", skipped_equipped, "equipped,",
+      skipped_favorite, "favorite,", skipped_no_tool, "needing a tool")
   end
 
   log.debug("rip_all_clothing: queuing", #to_rip, "item(s) for ripping", fabric_filter or "(all types)")
@@ -189,11 +190,11 @@ local function _on_fill_inventory_menu(player_num, context, items)
   end
   if total == 0 then return end
 
-  local anchor = context:addOption("Rip Clothing")
+  local anchor = context:addOption(getText("ContextMenu_null0x686F_QoL_rip_clothing"))
   local submenu = context:getNew(context)
   context:addSubMenu(anchor, submenu)
 
-  local all_option = submenu:addOption("Rip All", player, function()
+  local all_option = submenu:addOption(getText("ContextMenu_null0x686F_QoL_rip_all"), player, function()
     _rip_clothing(player, container, nil)
   end)
   if not tool and needs_tool_available then
@@ -205,7 +206,7 @@ local function _on_fill_inventory_menu(player_num, context, items)
   for i = 1, #FABRIC_TYPES do
     local ftype = FABRIC_TYPES[i]
     if #buckets[ftype] > 0 then
-      local option = submenu:addOption("Rip " .. ftype .. " Only", player, function()
+      local option = submenu:addOption(getText("ContextMenu_null0x686F_QoL_rip_fabric_only", ftype), player, function()
         _rip_clothing(player, container, ftype)
       end)
       _add_tool_status(option, ftype, tool)

@@ -12,8 +12,4 @@ cfg.ZOMBIE_OUTLINE = {
   colorRGBA = { 0.0, 1.0, 0.8, 1.0 },
 }
 
-cfg.AUTO_EQUIP_BROKEN_WEAPON = {
-  hotkey = Keyboard.KEY_NUMPAD8,
-}
-
 return cfg
